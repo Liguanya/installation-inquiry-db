@@ -347,49 +347,9 @@
     </style>
 </head>
 <body>
-    <div id="app">
-        <!-- 登录页 -->
-        <div class="login-container" v-if="currentPage === 'login'">
-            <div class="login-box">
-                <div class="login-header">
-                    <h1>🔧 安装专业询价数据库系统</h1>
-                    <p>专业的工程询价管理平台</p>
-                </div>
-                
-                <el-form label-width="0">
-                    <el-form-item>
-                        <el-input
-                            v-model="loginForm.username"
-                            placeholder="请输入用户名"
-                            size="large"
-                            prefix-icon="User"
-                            @keyup.enter="handleLogin"
-                        />
-                    </el-form-item>
-                    
-                    <el-form-item>
-                        <el-input
-                            v-model="loginForm.password"
-                            type="password"
-                            placeholder="请输入密码"
-                            size="large"
-                            prefix-icon="Lock"
-                            @keyup.enter="handleLogin"
-                            show-password
-                        />
-                    </el-form-item>
-                    
-                    <el-form-item>
-                        <el-button type="primary" size="large" style="width: 100%;" @click="handleLogin">
-                            登录
-                        </el-button>
-                    </el-form-item>
-                </el-form>
-            </div>
-        </div>
-        
-        <!-- 主页面 -->
-        <div class="layout-container" v-else>
+    <div id="app"></div>
+    
+    <!-- Vue 3 -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <!-- Element Plus -->
     <script src="https://unpkg.com/element-plus"></script>
@@ -1023,7 +983,52 @@
         app.use(ElementPlus, { locale: ElementPlusLocaleZhCn });
         app.mount('#app');
     </script>
-
+    
+    <!-- 登录页模板 -->
+    <template id="login-template">
+        <div class="login-container" v-if="currentPage === 'login'">
+            <div class="login-box">
+                <div class="login-header">
+                    <h1>🔧 安装专业询价数据库系统</h1>
+                    <p>专业的工程询价管理平台</p>
+                </div>
+                
+                <el-form label-width="0">
+                    <el-form-item>
+                        <el-input
+                            v-model="loginForm.username"
+                            placeholder="请输入用户名"
+                            size="large"
+                            prefix-icon="User"
+                            @keyup.enter="handleLogin"
+                        />
+                    </el-form-item>
+                    
+                    <el-form-item>
+                        <el-input
+                            v-model="loginForm.password"
+                            type="password"
+                            placeholder="请输入密码"
+                            size="large"
+                            prefix-icon="Lock"
+                            @keyup.enter="handleLogin"
+                            show-password
+                        />
+                    </el-form-item>
+                    
+                    <el-form-item>
+                        <el-button type="primary" size="large" style="width: 100%;" @click="handleLogin">
+                            登录
+                        </el-button>
+                    </el-form-item>
+                </el-form>
+                
+        </div>
+    </template>
+    
+    <!-- 主布局模板 -->
+    <template id="main-template">
+        <div class="layout-container" v-if="currentPage === 'main'">
             <div class="aside">
                 <div class="logo">
                     <span style="font-size: 24px;">📋</span>
@@ -1540,6 +1545,13 @@
                 </div>
             </div>
         </div>
-    </div>
+    </template>
+    
+    <!-- 将模板内容添加到app -->
+    <script>
+        document.getElementById('app').innerHTML = 
+            document.getElementById('login-template').innerHTML + 
+            document.getElementById('main-template').innerHTML;
+    </script>
 </body>
 </html>
