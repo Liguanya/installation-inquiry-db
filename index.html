@@ -981,6 +981,9 @@
         }
         
         app.use(ElementPlus, { locale: ElementPlusLocaleZhCn });
+        document.getElementById('app').innerHTML = 
+            document.getElementById('login-template').innerHTML + 
+            document.getElementById('main-template').innerHTML;
         app.mount('#app');
     </script>
     
@@ -1546,12 +1549,5 @@
             </div>
         </div>
     </template>
-    
-    <!-- 将模板内容添加到app -->
-    <script>
-        document.getElementById('app').innerHTML = 
-            document.getElementById('login-template').innerHTML + 
-            document.getElementById('main-template').innerHTML;
-    </script>
 </body>
 </html>
