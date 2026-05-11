@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>安装专业询价数据库系统</title>
-    <!-- Element Plus CSS -->
     <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
-    <!-- ECharts -->
     <script src="https://unpkg.com/echarts@5/dist/echarts.min.js"></script>
     <style>
         * {
@@ -20,7 +18,6 @@
             background: #f5f7fa;
         }
         
-        /* 登录页 */
         .login-container {
             width: 100%;
             height: 100vh;
@@ -54,7 +51,6 @@
             color: #909399;
         }
         
-        /* 布局 */
         .layout-container {
             display: flex;
             height: 100vh;
@@ -104,7 +100,6 @@
             padding: 20px;
         }
         
-        /* 通用样式 */
         .page-title {
             font-size: 20px;
             font-weight: 600;
@@ -195,160 +190,10 @@
             font-size: 14px;
             color: #606266;
         }
-        
-        /* 表格样式 */
-        .table-actions {
-            display: flex;
-            gap: 8px;
-        }
-        
-        .status-pending {
-            color: #e6a23c;
-            background: #fdf6ec;
-            border: 1px solid #f5dab1;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-        }
-        
-        .status-approved {
-            color: #67c23a;
-            background: #f0f9eb;
-            border: 1px solid #c2e7b0;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-        }
-        
-        .status-rejected {
-            color: #f56c6c;
-            background: #fef0f0;
-            border: 1px solid #fbc4c4;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-        }
-        
-        .price-highlight {
-            color: #f56c6c;
-            font-weight: 600;
-        }
-        
-        /* 搜索表单 */
-        .search-form {
-            background: #f5f7fa;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-        
-        .toolbar {
-            margin-bottom: 20px;
-        }
-        
-        .pagination {
-            margin-top: 20px;
-            text-align: right;
-        }
-        
-        /* 表单样式 */
-        .form-container {
-            max-width: 800px;
-        }
-        
-        .form-row {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 18px;
-        }
-        
-        .form-col {
-            flex: 1;
-        }
-        
-        .form-label {
-            display: block;
-            font-size: 14px;
-            color: #606266;
-            margin-bottom: 8px;
-        }
-        
-        .form-label .required {
-            color: #f56c6c;
-            margin-right: 4px;
-        }
-        
-        /* 详情页 */
-        .detail-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1px;
-            background: #ebeef5;
-            border: 1px solid #ebeef5;
-        }
-        
-        .detail-item {
-            background: #fff;
-            padding: 15px 20px;
-        }
-        
-        .detail-label {
-            font-size: 14px;
-            color: #909399;
-            margin-bottom: 5px;
-        }
-        
-        .detail-value {
-            font-size: 14px;
-            color: #303133;
-        }
-        
-        /* 用户信息 */
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            color: #606266;
-        }
-        
-        /* 响应式 */
-        @media (max-width: 1200px) {
-            .quick-actions {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            .stat-row {
-                flex-wrap: wrap;
-            }
-            .stat-card {
-                min-width: calc(50% - 10px);
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .aside {
-                width: 64px;
-            }
-            .logo span {
-                display: none;
-            }
-            .quick-actions {
-                grid-template-columns: 1fr;
-            }
-            .stat-card {
-                min-width: 100%;
-            }
-        }
-        
-        /* 隐藏元素 */
-        .hidden {
-            display: none !important;
-        }
     </style>
 </head>
 <body>
     <div id="app">
-        <!-- 登录页 -->
         <div class="login-container" v-if="currentPage === 'login'">
             <div class="login-box">
                 <div class="login-header">
@@ -388,18 +233,357 @@
             </div>
         </div>
         
-        <!-- 主页面 -->
         <div class="layout-container" v-else>
+            <div class="aside">
+                <div class="logo">
+                    <span>🔧</span>
+                    <span>询价数据库</span>
+                </div>
+                <el-menu
+                    :default-active="activeMenu"
+                    class="sidebar-menu"
+                    background-color="#304156"
+                    text-color="#bfcbd9"
+                    active-text-color="#409eff"
+                    @select="handleMenuSelect"
+                >
+                    <el-menu-item index="dashboard">
+                        <el-icon><DataAnalysis /></el-icon>
+                        <span>数据概览</span>
+                    </el-menu-item>
+                    <el-menu-item index="query">
+                        <el-icon><Search /></el-icon>
+                        <span>询价查询</span>
+                    </el-menu-item>
+                    <el-menu-item index="upload" v-if="currentUser && currentUser.role !== 'readonly'">
+                        <el-icon><Upload /></el-icon>
+                        <span>数据上传</span>
+                    </el-menu-item>
+                    <el-menu-item index="review" v-if="currentUser && (currentUser.role === 'admin' || currentUser.role === 'superadmin')">
+                        <el-icon><DocumentChecked /></el-icon>
+                        <span>审核管理</span>
+                    </el-menu-item>
+                    <el-menu-item index="user" v-if="currentUser && currentUser.role === 'superadmin'">
+                        <el-icon><User /></el-icon>
+                        <span>用户管理</span>
+                    </el-menu-item>
+                    <el-menu-item index="category" v-if="currentUser && currentUser.role === 'superadmin'">
+                        <el-icon><Folder /></el-icon>
+                        <span>分类管理</span>
+                    </el-menu-item>
+                </el-menu>
+            </div>
+            
+            <div class="main-container">
+                <div class="header">
+                    <span class="page-title">{{ pageTitle }}</span>
+                    <div style="display: flex; align-items: center; gap: 20px;">
+                        <span>欢迎，{{ currentUser ? currentUser.real_name : '用户' }}</span>
+                        <el-dropdown @command="handleDropdownCommand">
+                            <span class="el-dropdown-link" style="cursor: pointer;">
+                                <el-icon><User /></el-icon>
+                                <el-icon><ArrowDown /></el-icon>
+                            </span>
+                            <template #dropdown>
+                                <el-dropdown-menu>
+                                    <el-dropdown-item command="logout">退出登录</el-dropdown-item>
+                                </el-dropdown-menu>
+                            </template>
+                        </el-dropdown>
+                    </div>
+                </div>
+                
+                <div class="main-content">
+                    <div v-if="activeMenu === 'dashboard'" class="dashboard-page">
+                        <div class="stat-row">
+                            <div class="stat-card">
+                                <div class="stat-icon" style="background: #409eff;">📊</div>
+                                <div class="stat-info">
+                                    <div class="stat-value">{{ stats.total }}</div>
+                                    <div class="stat-label">总记录数</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon" style="background: #67c23a;">✅</div>
+                                <div class="stat-info">
+                                    <div class="stat-value">{{ stats.approved }}</div>
+                                    <div class="stat-label">已通过</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon" style="background: #e6a23c;">⏳</div>
+                                <div class="stat-info">
+                                    <div class="stat-value">{{ stats.pending }}</div>
+                                    <div class="stat-label">待审核</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon" style="background: #f56c6c;">❌</div>
+                                <div class="stat-info">
+                                    <div class="stat-value">{{ stats.rejected }}</div>
+                                    <div class="stat-label">已驳回</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="page-card">
+                            <div style="margin-bottom: 20px; font-weight: 600;">专业分布</div>
+                            <div class="chart-container" ref="categoryChart"></div>
+                        </div>
+                        
+                        <div class="page-card">
+                            <div style="margin-bottom: 20px; font-weight: 600;">快捷操作</div>
+                            <div class="quick-actions">
+                                <div class="quick-action" @click="activeMenu = 'query'">
+                                    <div class="icon">🔍</div>
+                                    <span>查询询价数据</span>
+                                </div>
+                                <div class="quick-action" @click="activeMenu = 'upload'" v-if="currentUser && currentUser.role !== 'readonly'">
+                                    <div class="icon">📝</div>
+                                    <span>上传新数据</span>
+                                </div>
+                                <div class="quick-action" @click="activeMenu = 'review'" v-if="currentUser && (currentUser.role === 'admin' || currentUser.role === 'superadmin')">
+                                    <div class="icon">✅</div>
+                                    <span>审核数据</span>
+                                </div>
+                                <div class="quick-action" @click="exportData">
+                                    <div class="icon">📥</div>
+                                    <span>导出数据</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div v-if="activeMenu === 'query'" class="query-page">
+                        <div class="page-card">
+                            <div style="margin-bottom: 20px; font-weight: 600;">查询筛选</div>
+                            <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center; margin-bottom: 20px;">
+                                <el-input v-model="filterForm.keyword" placeholder="材料名称、规格" clearable style="width: 200px;" />
+                                <el-select v-model="filterForm.professional_category" placeholder="专业分类" clearable style="width: 150px;">
+                                    <el-option label="给排水" value="给排水" />
+                                    <el-option label="暖通空调" value="暖通空调" />
+                                    <el-option label="电气" value="电气" />
+                                    <el-option label="智能化" value="智能化" />
+                                </el-select>
+                                <el-input-number v-model="filterForm.price_min" :min="0" placeholder="最低价" style="width: 100px;" />
+                                <span>—</span>
+                                <el-input-number v-model="filterForm.price_max" :min="0" placeholder="最高价" style="width: 100px;" />
+                                <el-select v-model="filterForm.verification_status" placeholder="审核状态" clearable style="width: 120px;">
+                                    <el-option label="已通过" value="已通过" />
+                                    <el-option label="待审核" value="待审核" />
+                                    <el-option label="已驳回" value="已驳回" />
+                                </el-select>
+                                <el-button type="primary" @click="handleSearch">🔍 查询</el-button>
+                                <el-button @click="resetFilter">🔄 重置</el-button>
+                            </div>
+                            
+                            <el-table :data="paginatedData" border style="width: 100%;">
+                                <el-table-column prop="material_name" label="材料名称" width="180" />
+                                <el-table-column prop="specification" label="规格型号" width="180" />
+                                <el-table-column prop="professional_category" label="专业分类" width="100" />
+                                <el-table-column prop="sub_category" label="子分类" width="120" />
+                                <el-table-column prop="brand" label="品牌" width="100" />
+                                <el-table-column prop="unit" label="单位" width="70" />
+                                <el-table-column prop="unit_price" label="单价" width="100">
+                                    <template #default="{ row }">
+                                        ¥{{ row.unit_price }}
+                                    </template>
+                                </el-table-column>
+                                <el-table-column prop="tax_rate" label="税率" width="80" />
+                                <el-table-column prop="supplier_name" label="供应商" width="150" />
+                                <el-table-column prop="inquiry_date" label="询价日期" width="110" />
+                                <el-table-column prop="verification_status" label="状态" width="90">
+                                    <template #default="{ row }">
+                                        <el-tag :type="row.verification_status === '已通过' ? 'success' : row.verification_status === '待审核' ? 'warning' : 'danger'" size="small">
+                                            {{ row.verification_status }}
+                                        </el-tag>
+                                    </template>
+                                </el-table-column>
+                            </el-table>
+                            
+                            <el-pagination
+                                style="margin-top: 20px; justify-content: center;"
+                                background
+                                layout="total, sizes, prev, pager, next, jumper"
+                                :total="filteredRecords.length"
+                                :page-sizes="[10, 20, 50, 100]"
+                                v-model:current-page="filterForm.page"
+                                v-model:page-size="filterForm.page_size"
+                                @size-change="handleSizeChange"
+                                @current-change="handleCurrentChange"
+                            />
+                        </div>
+                    </div>
+                    
+                    <div v-if="activeMenu === 'upload'" class="upload-page">
+                        <div class="page-card">
+                            <div style="margin-bottom: 20px; font-weight: 600;">上传询价数据</div>
+                            <el-form :model="recordForm" label-width="120px" style="max-width: 800px;">
+                                <el-form-item label="询价日期">
+                                    <el-date-picker v-model="recordForm.inquiry_date" type="date" value-format="YYYY-MM-DD" style="width: 100%;" />
+                                </el-form-item>
+                                <el-form-item label="专业分类">
+                                    <el-select v-model="recordForm.professional_category" placeholder="请选择" style="width: 100%;" @change="onCategoryChange">
+                                        <el-option label="给排水" value="给排水" />
+                                        <el-option label="暖通空调" value="暖通空调" />
+                                        <el-option label="电气" value="电气" />
+                                        <el-option label="智能化" value="智能化" />
+                                    </el-select>
+                                </el-form-item>
+                                <el-form-item label="子分类">
+                                    <el-select v-model="recordForm.sub_category" placeholder="请选择" style="width: 100%;">
+                                        <el-option v-for="item in subCategories" :key="item" :label="item" :value="item" />
+                                    </el-select>
+                                </el-form-item>
+                                <el-form-item label="品牌">
+                                    <el-select v-model="recordForm.brand" placeholder="请选择" clearable style="width: 100%;">
+                                        <el-option v-for="item in brands" :key="item" :label="item" :value="item" />
+                                    </el-select>
+                                </el-form-item>
+                                <el-form-item label="材料名称">
+                                    <el-input v-model="recordForm.material_name" placeholder="请输入材料名称" />
+                                </el-form-item>
+                                <el-form-item label="规格型号">
+                                    <el-input v-model="recordForm.specification" placeholder="如：YJV-4*16+1*10" />
+                                </el-form-item>
+                                <el-form-item label="单位">
+                                    <el-input v-model="recordForm.unit" placeholder="如：米、个、台" />
+                                </el-form-item>
+                                <el-form-item label="单价">
+                                    <el-input-number v-model="recordForm.unit_price" :min="0" :precision="2" style="width: 100%;" />
+                                </el-form-item>
+                                <el-form-item label="税率">
+                                    <el-select v-model="recordForm.tax_rate" style="width: 100%;">
+                                        <el-option label="13%" value="13%" />
+                                        <el-option label="9%" value="9%" />
+                                        <el-option label="6%" value="6%" />
+                                        <el-option label="3%" value="3%" />
+                                        <el-option label="0%" value="0%" />
+                                    </el-select>
+                                </el-form-item>
+                                <el-form-item label="是否含税">
+                                    <el-radio-group v-model="recordForm.tax_included">
+                                        <el-radio label="是">是</el-radio>
+                                        <el-radio label="否">否</el-radio>
+                                    </el-radio-group>
+                                </el-form-item>
+                                <el-form-item label="供应商">
+                                    <el-select v-model="recordForm.supplier_name" placeholder="请选择供应商" clearable style="width: 100%;">
+                                        <el-option v-for="item in suppliers" :key="item" :label="item" :value="item" />
+                                    </el-select>
+                                </el-form-item>
+                                <el-form-item label="联系人">
+                                    <el-input v-model="recordForm.supplier_contact" placeholder="请输入联系人" />
+                                </el-form-item>
+                                <el-form-item label="项目名称">
+                                    <el-input v-model="recordForm.project_name" placeholder="请输入项目名称" />
+                                </el-form-item>
+                                <el-form-item label="项目所在地">
+                                    <el-input v-model="recordForm.project_location" placeholder="请输入项目所在地" />
+                                </el-form-item>
+                                <el-form-item label="数据来源">
+                                    <el-select v-model="recordForm.data_source" style="width: 100%;">
+                                        <el-option label="厂家报价" value="厂家报价" />
+                                        <el-option label="供应商报价" value="供应商报价" />
+                                        <el-option label="电商平台" value="电商平台" />
+                                        <el-option label="历史数据" value="历史数据" />
+                                        <el-option label="其他" value="其他" />
+                                    </el-select>
+                                </el-form-item>
+                                <el-form-item label="备注">
+                                    <el-input v-model="recordForm.remarks" type="textarea" :rows="4" placeholder="请输入备注信息" />
+                                </el-form-item>
+                                <el-form-item>
+                                    <el-button type="primary" @click="submitRecord">✅ 提交审核</el-button>
+                                    <el-button @click="resetRecordForm">🔄 重置</el-button>
+                                </el-form-item>
+                            </el-form>
+                        </div>
+                    </div>
+                    
+                    <div v-if="activeMenu === 'review'" class="review-page">
+                        <div class="page-card">
+                            <div style="margin-bottom: 20px; font-weight: 600;">待审核数据列表</div>
+                            <el-table :data="pendingRecords" border style="width: 100%;">
+                                <el-table-column prop="material_name" label="材料名称" width="180" />
+                                <el-table-column prop="specification" label="规格型号" width="180" />
+                                <el-table-column prop="professional_category" label="专业分类" width="100" />
+                                <el-table-column prop="brand" label="品牌" width="100" />
+                                <el-table-column prop="unit_price" label="单价" width="100" />
+                                <el-table-column prop="supplier_name" label="供应商" width="150" />
+                                <el-table-column prop="submitter_name" label="提交人" width="100" />
+                                <el-table-column prop="submit_time" label="提交时间" width="160" />
+                                <el-table-column label="操作" width="180" fixed="right">
+                                    <template #default="{ row }">
+                                        <el-button size="small" type="primary" @click="viewDetail(row)">查看</el-button>
+                                        <el-button size="small" type="success" @click="approveRecord(row)">通过</el-button>
+                                        <el-button size="small" type="danger" @click="rejectRecord(row)">驳回</el-button>
+                                    </template>
+                                </el-table-column>
+                            </el-table>
+                        </div>
+                    </div>
+                    
+                    <div v-if="activeMenu === 'user'" class="user-page">
+                        <div class="page-card">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                <span style="font-weight: 600;">用户管理</span>
+                                <el-button type="primary" @click="showAddUserDialog = true">➕ 添加用户</el-button>
+                            </div>
+                            <el-table :data="users" border style="width: 100%;">
+                                <el-table-column prop="username" label="用户名" width="120" />
+                                <el-table-column prop="real_name" label="真实姓名" width="120" />
+                                <el-table-column prop="role" label="角色" width="120">
+                                    <template #default="{ row }">
+                                        <el-tag :type="row.role === 'superadmin' ? 'danger' : row.role === 'admin' ? 'warning' : 'info'" size="small">
+                                            {{ roleMap[row.role] }}
+                                        </el-tag>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column prop="department" label="部门" width="150" />
+                                <el-table-column prop="phone" label="电话" width="130" />
+                                <el-table-column prop="email" label="邮箱" width="180" />
+                                <el-table-column prop="create_time" label="创建时间" width="160" />
+                                <el-table-column label="操作" width="150">
+                                    <template #default="{ row }">
+                                        <el-button size="small" @click="editUser(row)">编辑</el-button>
+                                        <el-button size="small" type="danger" @click="deleteUser(row)">删除</el-button>
+                                    </template>
+                                </el-table-column>
+                            </el-table>
+                        </div>
+                    </div>
+                    
+                    <div v-if="activeMenu === 'category'" class="category-page">
+                        <div class="page-card">
+                            <div style="margin-bottom: 20px; font-weight: 600;">分类管理</div>
+                            <el-alert
+                                title="系统默认分类"
+                                type="info"
+                                :closable="false"
+                                style="margin-bottom: 20px;"
+                            >
+                                <template #default>
+                                    <div>给排水：管材管件、卫生器具、消防器材、水泵设备、阀门</div>
+                                    <div>暖通空调：空调设备、通风设备、采暖设备、管材管件、保温材料</div>
+                                    <div>电气：线缆类、配电箱柜、照明器具、变压器</div>
+                                    <div>智能化：安防系统、消防报警、楼宇自控、综合布线</div>
+                                </template>
+                            </el-alert>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <!-- Element Plus -->
     <script src="https://unpkg.com/element-plus"></script>
-    <!-- Element Plus Icons -->
     <script src="https://unpkg.com/@element-plus/icons-vue"></script>
     
     <script>
         const { createApp, ref, reactive, computed, onMounted, watch } = Vue;
         
-        // ==================== 数据存储模块 ====================
         const DB_KEYS = {
             USERS: 'inquiry_users',
             RECORDS: 'inquiry_records',
@@ -418,1128 +602,436 @@
             }
         }
         
-        function saveToStorage(key, value) {
-            localStorage.setItem(key, JSON.stringify(value));
+        function saveToStorage(key, data) {
+            try {
+                localStorage.setItem(key, JSON.stringify(data));
+                return true;
+            } catch (e) {
+                return false;
+            }
         }
         
-        // 初始化默认数据
         function initDefaultData() {
-            // 默认用户
             if (!getFromStorage(DB_KEYS.USERS, null)) {
-                saveToStorage(DB_KEYS.USERS, [
-                    { id: 1, username: 'admin', password: 'admin123', full_name: '管理员', role: 'admin', is_active: true },
-                    { id: 2, username: 'user', password: 'user123', full_name: '普通用户', role: 'user', is_active: true }
-                ]);
+                const defaultUsers = [
+                    { id: 1, username: 'admin', password: 'admin123', real_name: '管理员', role: 'superadmin', department: '技术部', phone: '13800138000', email: 'admin@example.com', create_time: new Date().toISOString() },
+                    { id: 2, username: 'user', password: 'user123', real_name: '普通用户', role: 'user', department: '造价部', phone: '13800138001', email: 'user@example.com', create_time: new Date().toISOString() }
+                ];
+                saveToStorage(DB_KEYS.USERS, defaultUsers);
             }
             
-            // 默认分类
-            if (!getFromStorage(DB_KEYS.CATEGORIES, null)) {
-                saveToStorage(DB_KEYS.CATEGORIES, [
-                    { id: 1, code: '01', name: '给排水专业', parent_id: null, level: 1 },
-                    { id: 2, code: '0101', name: '管材管件', parent_id: 1, level: 2 },
-                    { id: 3, code: '0102', name: '卫生器具', parent_id: 1, level: 2 },
-                    { id: 4, code: '0103', name: '消防器材', parent_id: 1, level: 2 },
-                    { id: 5, code: '02', name: '暖通空调专业', parent_id: null, level: 1 },
-                    { id: 6, code: '0201', name: '空调设备', parent_id: 5, level: 2 },
-                    { id: 7, code: '0202', name: '通风设备', parent_id: 5, level: 2 },
-                    { id: 8, code: '03', name: '电气专业', parent_id: null, level: 1 },
-                    { id: 9, code: '0301', name: '线缆类', parent_id: 8, level: 2 },
-                    { id: 10, code: '0302', name: '配电箱柜', parent_id: 8, level: 2 },
-                    { id: 11, code: '0303', name: '照明器具', parent_id: 8, level: 2 },
-                    { id: 12, code: '04', name: '智能化专业', parent_id: null, level: 1 },
-                    { id: 13, code: '0401', name: '安防系统', parent_id: 12, level: 2 },
-                    { id: 14, code: '0402', name: '消防报警', parent_id: 12, level: 2 }
-                ]);
-            }
-            
-            // 默认品牌
             if (!getFromStorage(DB_KEYS.BRANDS, null)) {
-                saveToStorage(DB_KEYS.BRANDS, [
-                    { id: 1, name: '施耐德', english_name: 'Schneider', category: '电气专业' },
-                    { id: 2, name: '西门子', english_name: 'Siemens', category: '电气专业' },
-                    { id: 3, name: 'ABB', english_name: 'ABB', category: '电气专业' },
-                    { id: 4, name: '正泰', english_name: 'Chint', category: '电气专业' },
-                    { id: 5, name: '公牛', english_name: 'Bull', category: '电气专业' },
-                    { id: 6, name: '飞利浦', english_name: 'Philips', category: '电气专业' },
-                    { id: 7, name: '格力', english_name: 'Gree', category: '暖通空调专业' },
-                    { id: 8, name: '美的', english_name: 'Midea', category: '暖通空调专业' },
-                    { id: 9, name: '海尔', english_name: 'Haier', category: '暖通空调专业' },
-                    { id: 10, name: '联塑', english_name: 'Lesso', category: '给排水专业' },
-                    { id: 11, name: '科勒', english_name: 'Kohler', category: '给排水专业' },
-                    { id: 12, name: '海康威视', english_name: 'Hikvision', category: '智能化专业' }
-                ]);
+                const defaultBrands = ['西门子', 'ABB', '施耐德', '正泰', '德力西', '公牛', '飞利浦', '欧普', '美的', '格力', '海尔', '远大', '金盾', '天广', '闽山', '三雄极光', '佛山照明', '阳光照明', 'TCL', '海信'];
+                saveToStorage(DB_KEYS.BRANDS, defaultBrands);
             }
             
-            // 默认供应商
             if (!getFromStorage(DB_KEYS.SUPPLIERS, null)) {
-                saveToStorage(DB_KEYS.SUPPLIERS, [
-                    { id: 1, name: '北京机电设备有限公司', contact_person: '张经理', contact_phone: '13800138001' },
-                    { id: 2, name: '上海电气成套设备有限公司', contact_person: '李经理', contact_phone: '13800138002' },
-                    { id: 3, name: '天津建材供应有限公司', contact_person: '王经理', contact_phone: '13800138003' },
-                    { id: 4, name: '广东照明科技有限公司', contact_person: '孙经理', contact_phone: '13800138004' }
-                ]);
+                const defaultSuppliers = ['天津建材集团', '北京建材总公司', '上海建材供应公司', '广州建材批发市场', '深圳建材贸易有限公司', '杭州建材供应站', '南京建材批发市场', '武汉建材贸易公司', '成都建材集团', '重庆建材供应公司'];
+                saveToStorage(DB_KEYS.SUPPLIERS, defaultSuppliers);
             }
             
-            // 示例询价记录
             if (!getFromStorage(DB_KEYS.RECORDS, null)) {
                 const today = new Date().toISOString().split('T')[0];
-                saveToStorage(DB_KEYS.RECORDS, [
-                    {
-                        id: 1,
-                        record_id: 'XJ-' + today.replace(/-/g, '') + '-0001',
-                        inquiry_date: today,
-                        material_name: '电力电缆',
-                        specification: 'YJV-4*16+1*10',
-                        brand: '施耐德',
-                        unit: '米',
-                        unit_price: 85.50,
-                        tax_included: true,
-                        tax_rate: 13,
-                        supplier_name: '北京机电设备有限公司',
-                        professional_category: '电气专业',
-                        sub_category: '线缆类',
-                        inquiry_person: '管理员',
-                        data_source: '供应商报价',
-                        verification_status: 'approved',
-                        created_at: new Date().toISOString()
-                    },
-                    {
-                        id: 2,
-                        record_id: 'XJ-' + today.replace(/-/g, '') + '-0002',
-                        inquiry_date: today,
-                        material_name: '单联单控开关',
-                        specification: '86型 10A 250V',
-                        brand: '公牛',
-                        unit: '个',
-                        unit_price: 12.80,
-                        tax_included: true,
-                        tax_rate: 13,
-                        supplier_name: '天津建材供应有限公司',
-                        professional_category: '电气专业',
-                        sub_category: '照明器具',
-                        inquiry_person: '管理员',
-                        data_source: '供应商报价',
-                        verification_status: 'approved',
-                        created_at: new Date().toISOString()
-                    },
-                    {
-                        id: 3,
-                        record_id: 'XJ-' + today.replace(/-/g, '') + '-0003',
-                        inquiry_date: today,
-                        material_name: '五孔插座',
-                        specification: '86型 10A 250V',
-                        brand: '公牛',
-                        unit: '个',
-                        unit_price: 15.50,
-                        tax_included: true,
-                        tax_rate: 13,
-                        supplier_name: '天津建材供应有限公司',
-                        professional_category: '电气专业',
-                        sub_category: '照明器具',
-                        inquiry_person: '管理员',
-                        data_source: '供应商报价',
-                        verification_status: 'pending',
-                        created_at: new Date().toISOString()
-                    },
-                    {
-                        id: 4,
-                        record_id: 'XJ-' + today.replace(/-/g, '') + '-0004',
-                        inquiry_date: today,
-                        material_name: 'LED平板灯',
-                        specification: '600*600 40W 6500K',
-                        brand: '飞利浦',
-                        unit: '套',
-                        unit_price: 128.00,
-                        tax_included: true,
-                        tax_rate: 13,
-                        supplier_name: '广东照明科技有限公司',
-                        professional_category: '电气专业',
-                        sub_category: '照明器具',
-                        inquiry_person: '管理员',
-                        data_source: '电商平台',
-                        verification_status: 'approved',
-                        created_at: new Date().toISOString()
-                    }
-                ]);
+                const demoRecords = [
+                    { id: 1, inquiry_date: today, professional_category: '电气', sub_category: '线缆类', brand: 'ABB', material_name: '交联聚乙烯绝缘电力电缆', specification: 'YJV-4*16+1*10', unit: '米', unit_price: 85.50, tax_rate: '13%', tax_included: '是', supplier_name: '天津建材集团', supplier_contact: '张经理', project_name: '示范项目', project_location: '天津', data_source: '厂家报价', remarks: 'A级阻燃', verification_status: '已通过', submitter_id: 1, submitter_name: '管理员', submit_time: new Date().toISOString(), reviewer_id: 1, reviewer_name: '管理员', review_time: new Date().toISOString(), review_remark: '数据准确' },
+                    { id: 2, inquiry_date: today, professional_category: '电气', sub_category: '配电箱柜', brand: '施耐德', material_name: '低压配电柜', specification: 'GGD-2000*800*600', unit: '台', unit_price: 12500.00, tax_rate: '13%', tax_included: '是', supplier_name: '北京建材总公司', supplier_contact: '李总', project_name: '示范项目', project_location: '北京', data_source: '厂家报价', remarks: '含安装调试', verification_status: '已通过', submitter_id: 1, submitter_name: '管理员', submit_time: new Date().toISOString(), reviewer_id: 1, reviewer_name: '管理员', review_time: new Date().toISOString(), review_remark: '价格合理' },
+                    { id: 3, inquiry_date: today, professional_category: '给排水', sub_category: '管材管件', brand: '金牛', material_name: 'PPR热水管', specification: 'DN25 S3.2', unit: '米', unit_price: 18.50, tax_rate: '13%', tax_included: '是', supplier_name: '上海建材供应公司', supplier_contact: '王经理', project_name: '示范项目', project_location: '上海', data_source: '供应商报价', remarks: '国标产品', verification_status: '待审核', submitter_id: 2, submitter_name: '普通用户', submit_time: new Date().toISOString() },
+                    { id: 4, inquiry_date: today, professional_category: '暖通空调', sub_category: '空调设备', brand: '格力', material_name: '多联机室外机', specification: 'GMV-H160WL/A', unit: '台', unit_price: 28500.00, tax_rate: '13%', tax_included: '是', supplier_name: '广州建材批发市场', supplier_contact: '陈总', project_name: '示范项目', project_location: '广州', data_source: '电商平台', remarks: '6匹变频', verification_status: '待审核', submitter_id: 2, submitter_name: '普通用户', submit_time: new Date().toISOString() },
+                    { id: 5, inquiry_date: today, professional_category: '智能化', sub_category: '安防系统', brand: '海康威视', material_name: '网络摄像机', specification: 'DS-2CD3T46WD-I3', unit: '台', unit_price: 480.00, tax_rate: '13%', tax_included: '是', supplier_name: '深圳建材贸易有限公司', supplier_contact: '刘经理', project_name: '示范项目', project_location: '深圳', data_source: '厂家报价', remarks: '400万像素', verification_status: '待审核', submitter_id: 2, submitter_name: '普通用户', submit_time: new Date().toISOString() }
+                ];
+                saveToStorage(DB_KEYS.RECORDS, demoRecords);
             }
         }
         
-        // 初始化数据
-        initDefaultData();
-        
-        // ==================== Vue 应用 ====================
         const app = createApp({
             setup() {
-                // 状态管理
                 const currentPage = ref('login');
-                const currentUser = ref(getFromStorage(DB_KEYS.CURRENT_USER, null));
-                const menuActive = ref('dashboard');
+                const currentUser = ref(null);
+                const activeMenu = ref('dashboard');
                 
-                // 登录表单
                 const loginForm = reactive({
                     username: '',
                     password: ''
                 });
                 
-                // 搜索筛选
+                const users = ref([]);
+                const records = ref([]);
+                const brands = ref([]);
+                const suppliers = ref([]);
+                
                 const filterForm = reactive({
                     keyword: '',
                     professional_category: '',
                     price_min: null,
                     price_max: null,
-                    verification_status: '',
+                    verification_status: '已通过',
                     page: 1,
                     page_size: 20
                 });
                 
-                // 询价记录表单
                 const recordForm = reactive({
-                    id: null,
                     inquiry_date: new Date().toISOString().split('T')[0],
                     professional_category: '',
                     sub_category: '',
+                    brand: '',
                     material_name: '',
                     specification: '',
-                    brand: '',
                     unit: '',
-                    unit_price: null,
-                    tax_included: true,
-                    tax_rate: 13,
+                    unit_price: 0,
+                    tax_rate: '13%',
+                    tax_included: '是',
                     supplier_name: '',
                     supplier_contact: '',
-                    supplier_phone: '',
                     project_name: '',
                     project_location: '',
                     data_source: '供应商报价',
                     remarks: ''
                 });
                 
-                // 数据列表
-                const records = ref([]);
-                const categories = ref([]);
-                const brands = ref([]);
-                const suppliers = ref([]);
-                const total = ref(0);
-                const loading = ref(false);
-                const isEditMode = ref(false);
-                const currentRecord = ref(null);
+                const categoryChart = ref(null);
+                const showAddUserDialog = ref(false);
                 
-                // 专业分类映射
-                const categoryMap = {
-                    '给排水专业': ['管材管件', '卫生器具', '消防器材', '水泵设备', '阀门'],
-                    '暖通空调专业': ['空调设备', '通风设备', '采暖设备', '管材管件', '保温材料'],
-                    '电气专业': ['线缆类', '配电箱柜', '照明器具', '变压器'],
-                    '智能化专业': ['安防系统', '消防报警', '楼宇自控', '综合布线']
+                const roleMap = {
+                    superadmin: '超级管理员',
+                    admin: '管理员',
+                    user: '普通用户',
+                    readonly: '只读用户'
                 };
                 
-                const subCategories = ref([]);
-                
-                // 状态显示映射
-                const statusMap = {
-                    pending: '待审核',
-                    approved: '已通过',
-                    rejected: '已驳回'
+                const subCategoriesMap = {
+                    '给排水': ['管材管件', '卫生器具', '消防器材', '水泵设备', '阀门'],
+                    '暖通空调': ['空调设备', '通风设备', '采暖设备', '管材管件', '保温材料'],
+                    '电气': ['线缆类', '配电箱柜', '照明器具', '变压器'],
+                    '智能化': ['安防系统', '消防报警', '楼宇自控', '综合布线']
                 };
                 
-                // 计算属性
-                const isAdmin = computed(() => currentUser.value?.role === 'admin');
+                const subCategories = computed(() => {
+                    return recordForm.professional_category ? subCategoriesMap[recordForm.professional_category] || [] : [];
+                });
                 
-                // 图表实例
-                let categoryChart = null;
-                let monthChart = null;
+                const pageTitle = computed(() => {
+                    const titles = {
+                        dashboard: '📊 数据概览',
+                        query: '🔍 询价查询',
+                        upload: '📝 数据上传',
+                        review: '✅ 审核管理',
+                        user: '👤 用户管理',
+                        category: '📁 分类管理'
+                    };
+                    return titles[activeMenu.value] || '询价数据库';
+                });
                 
-                // ==================== 方法 ====================
+                const stats = computed(() => {
+                    const allRecords = records.value;
+                    return {
+                        total: allRecords.length,
+                        approved: allRecords.filter(r => r.verification_status === '已通过').length,
+                        pending: allRecords.filter(r => r.verification_status === '待审核').length,
+                        rejected: allRecords.filter(r => r.verification_status === '已驳回').length
+                    };
+                });
                 
-                // 登录
-                function handleLogin() {
+                const pendingRecords = computed(() => {
+                    return records.value.filter(r => r.verification_status === '待审核');
+                });
+                
+                const filteredRecords = computed(() => {
+                    let result = records.value.filter(r => r.verification_status === filterForm.verification_status);
+                    
+                    if (filterForm.keyword) {
+                        const kw = filterForm.keyword.toLowerCase();
+                        result = result.filter(r => 
+                            r.material_name.toLowerCase().includes(kw) ||
+                            r.specification.toLowerCase().includes(kw)
+                        );
+                    }
+                    
+                    if (filterForm.professional_category) {
+                        result = result.filter(r => r.professional_category === filterForm.professional_category);
+                    }
+                    
+                    if (filterForm.price_min !== null) {
+                        result = result.filter(r => r.unit_price >= filterForm.price_min);
+                    }
+                    
+                    if (filterForm.price_max !== null) {
+                        result = result.filter(r => r.unit_price <= filterForm.price_max);
+                    }
+                    
+                    return result;
+                });
+                
+                const paginatedRecords = computed(() => {
+                    const start = (filterForm.page - 1) * filterForm.page_size;
+                    const end = start + filterForm.page_size;
+                    return filteredRecords.value.slice(start, end);
+                });
+                
+                const handleLogin = () => {
                     if (!loginForm.username || !loginForm.password) {
                         ElementPlus.ElMessage.warning('请输入用户名和密码');
                         return;
                     }
                     
-                    const users = getFromStorage(DB_KEYS.USERS, []);
-                    const user = users.find(u => 
+                    const user = users.value.find(u => 
                         u.username === loginForm.username && 
-                        u.password === loginForm.password &&
-                        u.is_active
+                        u.password === loginForm.password
                     );
                     
                     if (user) {
                         currentUser.value = user;
                         saveToStorage(DB_KEYS.CURRENT_USER, user);
-                        ElementPlus.ElMessage.success('登录成功');
                         currentPage.value = 'main';
-                        menuActive.value = 'dashboard';
-                        loadData();
+                        ElementPlus.ElMessage.success('登录成功');
                     } else {
                         ElementPlus.ElMessage.error('用户名或密码错误');
                     }
-                }
+                };
                 
-                // 退出登录
-                function handleLogout() {
-                    ElementPlus.ElMessageBox.confirm('确定要退出登录吗？', '提示', {
-                        confirmButtonText: '确定',
-                        cancelButtonText: '取消',
-                        type: 'warning'
-                    }).then(() => {
-                        currentUser.value = null;
-                        localStorage.removeItem(DB_KEYS.CURRENT_USER);
-                        currentPage.value = 'login';
-                        ElementPlus.ElMessage.success('已退出登录');
-                    }).catch(() => {});
-                }
+                const handleLogout = () => {
+                    currentUser.value = null;
+                    currentPage.value = 'login';
+                    localStorage.removeItem(DB_KEYS.CURRENT_USER);
+                    ElementPlus.ElMessage.success('已退出登录');
+                };
                 
-                // 加载数据
-                function loadData() {
-                    categories.value = getFromStorage(DB_KEYS.CATEGORIES, []);
-                    brands.value = getFromStorage(DB_KEYS.BRANDS, []);
-                    suppliers.value = getFromStorage(DB_KEYS.SUPPLIERS, []);
-                    loadRecords();
-                }
+                const handleMenuSelect = (index) => {
+                    activeMenu.value = index;
+                };
                 
-                // 加载询价记录
-                function loadRecords() {
-                    loading.value = true;
-                    
-                    let allRecords = getFromStorage(DB_KEYS.RECORDS, []);
-                    
-                    // 筛选
-                    if (filterForm.keyword) {
-                        const kw = filterForm.keyword.toLowerCase();
-                        allRecords = allRecords.filter(r =>
-                            r.material_name.toLowerCase().includes(kw) ||
-                            r.specification.toLowerCase().includes(kw) ||
-                            r.brand?.toLowerCase().includes(kw)
-                        );
+                const handleDropdownCommand = (command) => {
+                    if (command === 'logout') {
+                        handleLogout();
                     }
-                    
-                    if (filterForm.professional_category) {
-                        allRecords = allRecords.filter(r => 
-                            r.professional_category === filterForm.professional_category
-                        );
-                    }
-                    
-                    if (filterForm.price_min !== null) {
-                        allRecords = allRecords.filter(r => r.unit_price >= filterForm.price_min);
-                    }
-                    
-                    if (filterForm.price_max !== null) {
-                        allRecords = allRecords.filter(r => r.unit_price <= filterForm.price_max);
-                    }
-                    
-                    if (filterForm.verification_status) {
-                        allRecords = allRecords.filter(r => 
-                            r.verification_status === filterForm.verification_status
-                        );
-                    }
-                    
-                    // 普通用户只看已通过的
-                    if (!isAdmin.value) {
-                        allRecords = allRecords.filter(r => r.verification_status === 'approved');
-                    }
-                    
-                    total.value = allRecords.length;
-                    
-                    // 分页
-                    const start = (filterForm.page - 1) * filterForm.page_size;
-                    const end = start + filterForm.page_size;
-                    records.value = allRecords.slice(start, end).reverse();
-                    
-                    loading.value = false;
-                    
-                    // 如果在仪表盘页面，渲染图表
-                    if (menuActive.value === 'dashboard') {
-                        setTimeout(renderCharts, 100);
-                    }
-                }
+                };
                 
-                // 重置筛选
-                function resetFilter() {
+                const handleSearch = () => {
+                    filterForm.page = 1;
+                    ElementPlus.ElMessage.success('查询完成，共找到 ' + filteredRecords.value.length + ' 条记录');
+                };
+                
+                const resetFilter = () => {
                     filterForm.keyword = '';
                     filterForm.professional_category = '';
                     filterForm.price_min = null;
                     filterForm.price_max = null;
-                    filterForm.verification_status = '';
+                    filterForm.verification_status = '已通过';
                     filterForm.page = 1;
-                    loadRecords();
-                }
+                };
                 
-                // 专业分类变化时更新子分类
-                function onCategoryChange(val) {
-                    subCategories.value = categoryMap[val] || [];
+                const handleSizeChange = (size) => {
+                    filterForm.page_size = size;
+                };
+                
+                const handleCurrentChange = (page) => {
+                    filterForm.page = page;
+                };
+                
+                const onCategoryChange = () => {
                     recordForm.sub_category = '';
-                }
+                };
                 
-                // 新增询价
-                function goToAdd() {
-                    isEditMode.value = false;
-                    Object.assign(recordForm, {
-                        id: null,
-                        inquiry_date: new Date().toISOString().split('T')[0],
-                        professional_category: '',
-                        sub_category: '',
-                        material_name: '',
-                        specification: '',
-                        brand: '',
-                        unit: '',
-                        unit_price: null,
-                        tax_included: true,
-                        tax_rate: 13,
-                        supplier_name: '',
-                        supplier_contact: '',
-                        supplier_phone: '',
-                        project_name: '',
-                        project_location: '',
-                        data_source: '供应商报价',
-                        remarks: ''
-                    });
-                    subCategories.value = [];
-                    menuActive.value = 'form';
-                }
-                
-                // 编辑询价
-                function editRecord(record) {
-                    isEditMode.value = true;
-                    Object.assign(recordForm, { ...record });
-                    subCategories.value = categoryMap[record.professional_category] || [];
-                    menuActive.value = 'form';
-                }
-                
-                // 查看详情
-                function viewDetail(record) {
-                    currentRecord.value = record;
-                    menuActive.value = 'detail';
-                }
-                
-                // 保存询价记录
-                function saveRecord() {
-                    if (!recordForm.material_name || !recordForm.specification || 
-                        !recordForm.unit || !recordForm.unit_price) {
-                        ElementPlus.ElMessage.warning('请填写必填项（材料名称、规格型号、单位、单价）');
+                const submitRecord = () => {
+                    if (!recordForm.professional_category || !recordForm.material_name || !recordForm.specification || !recordForm.unit || !recordForm.unit_price) {
+                        ElementPlus.ElMessage.warning('请填写必填字段');
                         return;
                     }
                     
-                    const allRecords = getFromStorage(DB_KEYS.RECORDS, []);
-                    
-                    if (isEditMode.value && recordForm.id) {
-                        // 编辑模式
-                        const index = allRecords.findIndex(r => r.id === recordForm.id);
-                        if (index !== -1) {
-                            allRecords[index] = { ...allRecords[index], ...recordForm };
-                            ElementPlus.ElMessage.success('更新成功');
-                        }
-                    } else {
-                        // 新增模式
-                        const today = new Date().toISOString().split('T')[0].replace(/-/g, '');
-                        const todayRecords = allRecords.filter(r => r.record_id.includes(today));
-                        const newId = allRecords.length > 0 ? Math.max(...allRecords.map(r => r.id)) + 1 : 1;
-                        const newRecord = {
-                            ...recordForm,
-                            id: newId,
-                            record_id: `XJ-${today}-${String(todayRecords.length + 1).padStart(4, '0')}`,
-                            inquiry_person: currentUser.value.full_name,
-                            verification_status: isAdmin.value ? 'approved' : 'pending',
-                            created_at: new Date().toISOString()
-                        };
-                        allRecords.push(newRecord);
-                        ElementPlus.ElMessage.success('保存成功');
-                    }
-                    
-                    saveToStorage(DB_KEYS.RECORDS, allRecords);
-                    loadRecords();
-                    menuActive.value = 'list';
-                }
-                
-                // 删除记录
-                function deleteRecord(record) {
-                    ElementPlus.ElMessageBox.confirm('确定要删除这条记录吗？', '提示', {
-                        confirmButtonText: '确定',
-                        cancelButtonText: '取消',
-                        type: 'warning'
-                    }).then(() => {
-                        const allRecords = getFromStorage(DB_KEYS.RECORDS, []);
-                        const filtered = allRecords.filter(r => r.id !== record.id);
-                        saveToStorage(DB_KEYS.RECORDS, filtered);
-                        ElementPlus.ElMessage.success('删除成功');
-                        loadRecords();
-                    }).catch(() => {});
-                }
-                
-                // 审核记录
-                function verifyRecord(record, status) {
-                    const allRecords = getFromStorage(DB_KEYS.RECORDS, []);
-                    const index = allRecords.findIndex(r => r.id === record.id);
-                    if (index !== -1) {
-                        allRecords[index].verification_status = status;
-                        allRecords[index].verification_person = currentUser.value.full_name;
-                        allRecords[index].verification_time = new Date().toISOString();
-                        saveToStorage(DB_KEYS.RECORDS, allRecords);
-                        ElementPlus.ElMessage.success('审核成功');
-                        loadRecords();
-                    }
-                }
-                
-                // 渲染统计图表
-                function renderCharts() {
-                    const allRecords = getFromStorage(DB_KEYS.RECORDS, []);
-                    
-                    // 专业分类统计
-                    const categoryData = {};
-                    allRecords.forEach(r => {
-                        if (r.professional_category) {
-                            categoryData[r.professional_category] = (categoryData[r.professional_category] || 0) + 1;
-                        }
-                    });
-                    
-                    const categoryChartDom = document.getElementById('categoryChart');
-                    if (categoryChartDom) {
-                        if (categoryChart) categoryChart.dispose();
-                        categoryChart = echarts.init(categoryChartDom);
-                        categoryChart.setOption({
-                            title: { text: '各专业数据分布', left: 'center' },
-                            tooltip: { trigger: 'item' },
-                            legend: { orient: 'vertical', left: 'left' },
-                            series: [{
-                                type: 'pie',
-                                radius: ['40%', '70%'],
-                                data: Object.entries(categoryData).map(([name, value]) => ({ name, value }))
-                            }]
-                        });
-                    }
-                    
-                    // 月度趋势统计
-                    const monthData = {};
-                    allRecords.forEach(r => {
-                        const month = r.inquiry_date?.substring(0, 7) || r.created_at?.substring(0, 7);
-                        if (month) {
-                            monthData[month] = (monthData[month] || 0) + 1;
-                        }
-                    });
-                    
-                    const monthChartDom = document.getElementById('monthChart');
-                    if (monthChartDom) {
-                        if (monthChart) monthChart.dispose();
-                        monthChart = echarts.init(monthChartDom);
-                        monthChart.setOption({
-                            title: { text: '月度新增趋势', left: 'center' },
-                            tooltip: { trigger: 'axis' },
-                            xAxis: { type: 'category', data: Object.keys(monthData).sort() },
-                            yAxis: { type: 'value' },
-                            series: [{
-                                type: 'bar',
-                                data: Object.keys(monthData).sort().map(k => monthData[k]),
-                                itemStyle: {
-                                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                                        { offset: 0, color: '#409eff' },
-                                        { offset: 1, color: '#67c23a' }
-                                    ])
-                                }
-                            }]
-                        });
-                    }
-                }
-                
-                // 获取统计数据
-                function getStats() {
-                    const allRecords = getFromStorage(DB_KEYS.RECORDS, []);
-                    const today = new Date().toISOString().split('T')[0];
-                    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-                    
-                    return {
-                        total: allRecords.length,
-                        today: allRecords.filter(r => r.inquiry_date === today).length,
-                        week: allRecords.filter(r => r.inquiry_date >= weekAgo).length,
-                        pending: allRecords.filter(r => r.verification_status === 'pending').length
+                    const newRecord = {
+                        id: Date.now(),
+                        ...recordForm,
+                        verification_status: '待审核',
+                        submitter_id: currentUser.value.id,
+                        submitter_name: currentUser.value.real_name,
+                        submit_time: new Date().toISOString()
                     };
-                }
+                    
+                    records.value.push(newRecord);
+                    saveToStorage(DB_KEYS.RECORDS, records.value);
+                    ElementPlus.ElMessage.success('数据提交成功，等待审核');
+                    resetRecordForm();
+                };
                 
-                // 页面导航
-                function navigateTo(page) {
-                    menuActive.value = page;
-                    if (page === 'dashboard') {
-                        setTimeout(renderCharts, 100);
-                    } else if (page === 'list') {
-                        loadRecords();
+                const resetRecordForm = () => {
+                    recordForm.inquiry_date = new Date().toISOString().split('T')[0];
+                    recordForm.professional_category = '';
+                    recordForm.sub_category = '';
+                    recordForm.brand = '';
+                    recordForm.material_name = '';
+                    recordForm.specification = '';
+                    recordForm.unit = '';
+                    recordForm.unit_price = 0;
+                    recordForm.tax_rate = '13%';
+                    recordForm.tax_included = '是';
+                    recordForm.supplier_name = '';
+                    recordForm.supplier_contact = '';
+                    recordForm.project_name = '';
+                    recordForm.project_location = '';
+                    recordForm.data_source = '供应商报价';
+                    recordForm.remarks = '';
+                };
+                
+                const viewDetail = (row) => {
+                    ElementPlus.ElMessage.info('查看详情功能开发中');
+                };
+                
+                const approveRecord = (row) => {
+                    const index = records.value.findIndex(r => r.id === row.id);
+                    if (index !== -1) {
+                        records.value[index].verification_status = '已通过';
+                        records.value[index].reviewer_id = currentUser.value.id;
+                        records.value[index].reviewer_name = currentUser.value.real_name;
+                        records.value[index].review_time = new Date().toISOString();
+                        records.value[index].review_remark = '审核通过';
+                        saveToStorage(DB_KEYS.RECORDS, records.value);
+                        ElementPlus.ElMessage.success('已通过审核');
                     }
-                }
+                };
                 
-                // 窗口大小变化时重绘图表
-                window.addEventListener('resize', () => {
-                    if (categoryChart) categoryChart.resize();
-                    if (monthChart) monthChart.resize();
+                const rejectRecord = (row) => {
+                    const index = records.value.findIndex(r => r.id === row.id);
+                    if (index !== -1) {
+                        records.value[index].verification_status = '已驳回';
+                        records.value[index].reviewer_id = currentUser.value.id;
+                        records.value[index].reviewer_name = currentUser.value.real_name;
+                        records.value[index].review_time = new Date().toISOString();
+                        records.value[index].review_remark = '审核驳回';
+                        saveToStorage(DB_KEYS.RECORDS, records.value);
+                        ElementPlus.ElMessage.warning('已驳回该记录');
+                    }
+                };
+                
+                const editUser = (user) => {
+                    ElementPlus.ElMessage.info('编辑用户功能开发中');
+                };
+                
+                const deleteUser = (user) => {
+                    ElementPlus.ElMessage.warning('删除用户功能开发中');
+                };
+                
+                const exportData = () => {
+                    const approvedRecords = records.value.filter(r => r.verification_status === '已通过');
+                    const csvContent = [
+                        ['材料名称', '规格型号', '专业分类', '子分类', '品牌', '单位', '单价', '税率', '供应商', '询价日期'].join(','),
+                        ...approvedRecords.map(r => [
+                            r.material_name,
+                            r.specification,
+                            r.professional_category,
+                            r.sub_category,
+                            r.brand,
+                            r.unit,
+                            r.unit_price,
+                            r.tax_rate,
+                            r.supplier_name,
+                            r.inquiry_date
+                        ].join(','))
+                    ].join('\n');
+                    
+                    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = '安装专业询价数据_' + new Date().toISOString().split('T')[0] + '.csv';
+                    link.click();
+                    ElementPlus.ElMessage.success('数据导出成功');
+                };
+                
+                const initChart = () => {
+                    if (!categoryChart.value) return;
+                    
+                    const chart = echarts.init(categoryChart.value);
+                    const categories = ['给排水', '暖通空调', '电气', '智能化'];
+                    const categoryData = categories.map(cat => 
+                        records.value.filter(r => r.professional_category === cat && r.verification_status === '已通过').length
+                    );
+                    
+                    chart.setOption({
+                        tooltip: { trigger: 'item' },
+                        legend: { bottom: '5%' },
+                        series: [{
+                            name: '专业分布',
+                            type: 'pie',
+                            radius: ['40%', '70%'],
+                            avoidLabelOverlap: false,
+                            itemStyle: { borderRadius: 10, borderColor: '#fff', borderWidth: 2 },
+                            label: { show: false },
+                            emphasis: { label: { show: true, fontSize: 16, fontWeight: 'bold' } },
+                            labelLine: { show: false },
+                            data: categories.map((cat, i) => ({ value: categoryData[i], name: cat }))
+                        }]
+                    });
+                    
+                    window.addEventListener('resize', () => chart.resize());
+                };
+                
+                onMounted(() => {
+                    initDefaultData();
+                    users.value = getFromStorage(DB_KEYS.USERS, []);
+                    records.value = getFromStorage(DB_KEYS.RECORDS, []);
+                    brands.value = getFromStorage(DB_KEYS.BRANDS, []);
+                    suppliers.value = getFromStorage(DB_KEYS.SUPPLIERS, []);
+                    
+                    const savedUser = getFromStorage(DB_KEYS.CURRENT_USER, null);
+                    if (savedUser) {
+                        currentUser.value = savedUser;
+                        currentPage.value = 'main';
+                    }
+                    
+                    setTimeout(initChart, 100);
                 });
                 
-                // 检查登录状态
-                onMounted(() => {
-                    if (currentUser.value) {
-                        currentPage.value = 'main';
-                        loadData();
+                watch(activeMenu, (newVal) => {
+                    if (newVal === 'dashboard') {
+                        setTimeout(initChart, 100);
                     }
                 });
                 
                 return {
                     currentPage,
                     currentUser,
-                    menuActive,
+                    activeMenu,
                     loginForm,
-                    filterForm,
-                    recordForm,
+                    users,
                     records,
-                    categories,
                     brands,
                     suppliers,
-                    total,
-                    loading,
-                    isEditMode,
-                    currentRecord,
+                    filterForm,
+                    recordForm,
+                    categoryChart,
+                    showAddUserDialog,
+                    roleMap,
                     subCategories,
-                    categoryMap,
-                    statusMap,
-                    isAdmin,
+                    pageTitle,
+                    stats,
+                    pendingRecords,
+                    filteredRecords,
+                    paginatedData: paginatedRecords,
                     handleLogin,
                     handleLogout,
-                    loadData,
-                    loadRecords,
+                    handleMenuSelect,
+                    handleDropdownCommand,
+                    handleSearch,
                     resetFilter,
+                    handleSizeChange,
+                    handleCurrentChange,
                     onCategoryChange,
-                    goToAdd,
-                    editRecord,
+                    submitRecord,
+                    resetRecordForm,
                     viewDetail,
-                    saveRecord,
-                    deleteRecord,
-                    verifyRecord,
-                    getStats,
-                    navigateTo
+                    approveRecord,
+                    rejectRecord,
+                    editUser,
+                    deleteUser,
+                    exportData
                 };
             }
         });
         
-        // 注册 Element Plus 组件和图标
         for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
             app.component(key, component);
         }
         
-        app.use(ElementPlus, { locale: ElementPlusLocaleZhCn });
+        app.use(ElementPlus);
         app.mount('#app');
     </script>
-
-            <div class="aside">
-                <div class="logo">
-                    <span style="font-size: 24px;">📋</span>
-                    <span>询价数据库</span>
-                </div>
-                
-                <el-menu
-                    :default-active="menuActive"
-                    class="sidebar-menu"
-                    background-color="#304156"
-                    text-color="#bfcbd9"
-                    active-text-color="#409eff"
-                    @select="navigateTo"
-                >
-                    <el-menu-item index="dashboard">
-                        <el-icon><DataLine /></el-icon>
-                        <span>数据概览</span>
-                    </el-menu-item>
-                    
-                    <el-menu-item index="list">
-                        <el-icon><Search /></el-icon>
-                        <span>询价记录</span>
-                    </el-menu-item>
-                    
-                    <el-menu-item index="form">
-                        <el-icon><Plus /></el-icon>
-                        <span>新增询价</span>
-                    </el-menu-item>
-                    
-                    <el-menu-item index="audit" v-if="isAdmin">
-                        <el-icon><Check /></el-icon>
-                        <span>待审核</span>
-                    </el-menu-item>
-                </el-menu>
-            </div>
-            
-            <div class="main-container">
-                <div class="header">
-                    <div>
-                        <el-breadcrumb separator="/">
-                            <el-breadcrumb-item>
-                                {{ menuActive === 'dashboard' ? '数据概览' : 
-                                   menuActive === 'list' ? '询价记录' :
-                                   menuActive === 'form' ? (isEditMode ? '编辑询价' : '新增询价') :
-                                   menuActive === 'detail' ? '询价详情' :
-                                   menuActive === 'audit' ? '待审核' : '' }}
-                            </el-breadcrumb-item>
-                        </el-breadcrumb>
-                    </div>
-                    
-                    <div class="header-right">
-                        <el-dropdown @command="handleLogout">
-                            <span class="user-info">
-                                <el-icon size="20"><User /></el-icon>
-                                <span>{{ currentUser?.full_name || currentUser?.username }}</span>
-                                <span style="font-size: 12px; color: #909399;">({{ currentUser?.role === 'admin' ? '管理员' : '普通用户' }})</span>
-                                <el-icon><ArrowDown /></el-icon>
-                            </span>
-                            <template #dropdown>
-                                <el-dropdown-menu>
-                                    <el-dropdown-item command="logout">退出登录</el-dropdown-item>
-                                </el-dropdown-menu>
-                            </template>
-                        </el-dropdown>
-                    </div>
-                </div>
-                
-                <div class="main-content">
-                    <!-- 数据概览页面 -->
-                    <div v-if="menuActive === 'dashboard'">
-                        <div class="page-title">📊 数据概览</div>
-                        
-                        <!-- 统计卡片 -->
-                        <div class="stat-row">
-                            <div class="stat-card">
-                                <div class="stat-icon" style="background: #409eff;">📋</div>
-                                <div class="stat-info">
-                                    <div class="stat-value">{{ getStats().total }}</div>
-                                    <div class="stat-label">总记录数</div>
-                                </div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-icon" style="background: #67c23a;">➕</div>
-                                <div class="stat-info">
-                                    <div class="stat-value">{{ getStats().today }}</div>
-                                    <div class="stat-label">今日新增</div>
-                                </div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-icon" style="background: #e6a23c;">📅</div>
-                                <div class="stat-info">
-                                    <div class="stat-value">{{ getStats().week }}</div>
-                                    <div class="stat-label">本周新增</div>
-                                </div>
-                            </div>
-                            <div class="stat-card" v-if="isAdmin">
-                                <div class="stat-icon" style="background: #f56c6c;">⏰</div>
-                                <div class="stat-info">
-                                    <div class="stat-value">{{ getStats().pending }}</div>
-                                    <div class="stat-label">待审核</div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- 图表 -->
-                        <el-row :gutter="20">
-                            <el-col :span="12">
-                                <div class="page-card">
-                                    <div id="categoryChart" class="chart-container"></div>
-                                </div>
-                            </el-col>
-                            <el-col :span="12">
-                                <div class="page-card">
-                                    <div id="monthChart" class="chart-container"></div>
-                                </div>
-                            </el-col>
-                        </el-row>
-                        
-                        <!-- 快捷操作 -->
-                        <div class="page-card" style="margin-top: 20px;">
-                            <h3 style="margin-bottom: 20px;">快捷操作</h3>
-                            <div class="quick-actions">
-                                <el-card class="quick-action" shadow="hover" @click="goToAdd">
-                                    <div class="icon">➕</div>
-                                    <span>新增询价记录</span>
-                                </el-card>
-                                <el-card class="quick-action" shadow="hover" @click="menuActive = 'list'">
-                                    <div class="icon">🔍</div>
-                                    <span>查询询价记录</span>
-                                </el-card>
-                                <el-card class="quick-action" shadow="hover" @click="menuActive = 'audit'" v-if="isAdmin">
-                                    <div class="icon">✅</div>
-                                    <span>待审核记录</span>
-                                </el-card>
-                                <el-card class="quick-action" shadow="hover">
-                                    <div class="icon">📦</div>
-                                    <span>数据统计分析</span>
-                                </el-card>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- 询价记录列表 -->
-                    <div v-if="menuActive === 'list'">
-                        <div class="page-title">📋 询价记录</div>
-                        
-                        <div class="page-card">
-                            <!-- 搜索栏 -->
-                            <div class="search-form">
-                                <el-form :inline="true" :model="filterForm">
-                                    <el-form-item label="关键词">
-                                        <el-input v-model="filterForm.keyword" placeholder="材料名称、规格" clearable style="width: 200px;" />
-                                    </el-form-item>
-                                    
-                                    <el-form-item label="专业分类">
-                                        <el-select v-model="filterForm.professional_category" placeholder="请选择" clearable style="width: 150px;">
-                                            <el-option label="给排水专业" value="给排水专业" />
-                                            <el-option label="暖通空调专业" value="暖通空调专业" />
-                                            <el-option label="电气专业" value="电气专业" />
-                                            <el-option label="智能化专业" value="智能化专业" />
-                                        </el-select>
-                                    </el-form-item>
-                                    
-                                    <el-form-item label="价格区间">
-                                        <el-input-number v-model="filterForm.price_min" :min="0" placeholder="最低价" style="width: 100px;" />
-                                        <span style="margin: 0 8px;">-</span>
-                                        <el-input-number v-model="filterForm.price_max" :min="0" placeholder="最高价" style="width: 100px;" />
-                                    </el-form-item>
-                                    
-                                    <el-form-item label="状态" v-if="isAdmin">
-                                        <el-select v-model="filterForm.verification_status" placeholder="请选择" clearable style="width: 120px;">
-                                            <el-option label="待审核" value="pending" />
-                                            <el-option label="已通过" value="approved" />
-                                            <el-option label="已驳回" value="rejected" />
-                                        </el-select>
-                                    </el-form-item>
-                                    
-                                    <el-form-item>
-                                        <el-button type="primary" @click="loadRecords">搜索</el-button>
-                                        <el-button @click="resetFilter">重置</el-button>
-                                    </el-form-item>
-                                </el-form>
-                            </div>
-                            
-                            <!-- 操作栏 -->
-                            <div class="toolbar">
-                                <el-button type="primary" @click="goToAdd">
-                                    <el-icon><Plus /></el-icon>
-                                    新增询价
-                                </el-button>
-                            </div>
-                            
-                            <!-- 表格 -->
-                            <el-table :data="records" border stripe style="width: 100%;" v-loading="loading">
-                                <el-table-column prop="record_id" label="记录编号" width="160" />
-                                <el-table-column prop="material_name" label="材料名称" min-width="120" />
-                                <el-table-column prop="specification" label="规格型号" min-width="150" />
-                                <el-table-column prop="brand" label="品牌" width="100" />
-                                <el-table-column prop="unit" label="单位" width="70" />
-                                <el-table-column prop="unit_price" label="单价" width="100">
-                                    <template #default="{ row }">
-                                        <span class="price-highlight">¥{{ row.unit_price?.toFixed(2) }}</span>
-                                    </template>
-                                </el-table-column>
-                                <el-table-column prop="supplier_name" label="供应商" min-width="150" />
-                                <el-table-column prop="professional_category" label="专业分类" width="120" />
-                                <el-table-column prop="inquiry_date" label="询价日期" width="120" />
-                                <el-table-column prop="verification_status" label="状态" width="100">
-                                    <template #default="{ row }">
-                                        <span :class="`status-${row.verification_status}`">
-                                            {{ statusMap[row.verification_status] || row.verification_status }}
-                                        </span>
-                                    </template>
-                                </el-table-column>
-                                <el-table-column label="操作" width="180" fixed="right">
-                                    <template #default="{ row }">
-                                        <div class="table-actions">
-                                            <el-button type="primary" link size="small" @click="viewDetail(row)">查看</el-button>
-                                            <el-button type="primary" link size="small" @click="editRecord(row)">编辑</el-button>
-                                            <el-button type="danger" link size="small" @click="deleteRecord(row)" v-if="isAdmin">删除</el-button>
-                                        </div>
-                                    </template>
-                                </el-table-column>
-                            </el-table>
-                            
-                            <!-- 分页 -->
-                            <div class="pagination">
-                                <el-pagination
-                                    v-model:current-page="filterForm.page"
-                                    v-model:page-size="filterForm.page_size"
-                                    :page-sizes="[10, 20, 50, 100]"
-                                    :total="total"
-                                    layout="total, sizes, prev, pager, next, jumper"
-                                    @size-change="loadRecords"
-                                    @current-change="loadRecords"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- 新增/编辑表单 -->
-                    <div v-if="menuActive === 'form'">
-                        <div class="page-title">{{ isEditMode ? '✏️ 编辑询价记录' : '➕ 新增询价记录' }}</div>
-                        
-                        <div class="page-card">
-                            <div class="form-container">
-                                <div class="form-row">
-                                    <div class="form-col">
-                                        <label class="form-label">
-                                            <span class="required">*</span> 询价日期
-                                        </label>
-                                        <el-date-picker v-model="recordForm.inquiry_date" type="date" value-format="YYYY-MM-DD" style="width: 100%;" />
-                                    </div>
-                                    <div class="form-col">
-                                        <label class="form-label">
-                                            <span class="required">*</span> 专业分类
-                                        </label>
-                                        <el-select v-model="recordForm.professional_category" placeholder="请选择" style="width: 100%;" @change="onCategoryChange">
-                                            <el-option label="给排水专业" value="给排水专业" />
-                                            <el-option label="暖通空调专业" value="暖通空调专业" />
-                                            <el-option label="电气专业" value="电气专业" />
-                                            <el-option label="智能化专业" value="智能化专业" />
-                                        </el-select>
-                                    </div>
-                                </div>
-                                
-                                <div class="form-row">
-                                    <div class="form-col">
-                                        <label class="form-label">子分类</label>
-                                        <el-select v-model="recordForm.sub_category" placeholder="请选择" style="width: 100%;">
-                                            <el-option v-for="cat in subCategories" :key="cat" :label="cat" :value="cat" />
-                                        </el-select>
-                                    </div>
-                                    <div class="form-col">
-                                        <label class="form-label">品牌</label>
-                                        <el-select v-model="recordForm.brand" placeholder="请选择" clearable style="width: 100%;">
-                                            <el-option v-for="b in brands" :key="b.id" :label="b.name" :value="b.name" />
-                                        </el-select>
-                                    </div>
-                                </div>
-                                
-                                <div class="form-row">
-                                    <div class="form-col">
-                                        <label class="form-label">
-                                            <span class="required">*</span> 材料名称
-                                        </label>
-                                        <el-input v-model="recordForm.material_name" placeholder="请输入材料名称" />
-                                    </div>
-                                </div>
-                                
-                                <div class="form-row">
-                                    <div class="form-col">
-                                        <label class="form-label">
-                                            <span class="required">*</span> 规格型号
-                                        </label>
-                                        <el-input v-model="recordForm.specification" placeholder="如：YJV-4*16+1*10" />
-                                    </div>
-                                </div>
-                                
-                                <div class="form-row">
-                                    <div class="form-col" style="flex: 0 0 30%;">
-                                        <label class="form-label">
-                                            <span class="required">*</span> 单位
-                                        </label>
-                                        <el-input v-model="recordForm.unit" placeholder="如：米、个、台" />
-                                    </div>
-                                    <div class="form-col" style="flex: 0 0 30%;">
-                                        <label class="form-label">
-                                            <span class="required">*</span> 单价
-                                        </label>
-                                        <el-input-number v-model="recordForm.unit_price" :min="0" :precision="2" style="width: 100%;" />
-                                    </div>
-                                    <div class="form-col" style="flex: 0 0 40%;">
-                                        <label class="form-label">税率</label>
-                                        <el-select v-model="recordForm.tax_rate" style="width: 100%;">
-                                            <el-option :label="13" :value="13" />
-                                            <el-option :label="9" :value="9" />
-                                            <el-option :label="6" :value="6" />
-                                            <el-option :label="3" :value="3" />
-                                        </el-select>
-                                    </div>
-                                </div>
-                                
-                                <div class="form-row">
-                                    <div class="form-col">
-                                        <label class="form-label">是否含税</label>
-                                        <el-radio-group v-model="recordForm.tax_included">
-                                            <el-radio :label="true">含税</el-radio>
-                                            <el-radio :label="false">不含税</el-radio>
-                                        </el-radio-group>
-                                    </div>
-                                </div>
-                                
-                                <div class="form-row">
-                                    <div class="form-col">
-                                        <label class="form-label">供应商</label>
-                                        <el-select v-model="recordForm.supplier_name" placeholder="请选择供应商" clearable style="width: 100%;">
-                                            <el-option v-for="s in suppliers" :key="s.id" :label="s.name" :value="s.name" />
-                                        </el-select>
-                                    </div>
-                                    <div class="form-col">
-                                        <label class="form-label">联系人</label>
-                                        <el-input v-model="recordForm.supplier_contact" placeholder="请输入联系人" />
-                                    </div>
-                                </div>
-                                
-                                <div class="form-row">
-                                    <div class="form-col">
-                                        <label class="form-label">项目名称</label>
-                                        <el-input v-model="recordForm.project_name" placeholder="请输入项目名称" />
-                                    </div>
-                                    <div class="form-col">
-                                        <label class="form-label">项目所在地</label>
-                                        <el-input v-model="recordForm.project_location" placeholder="请输入项目所在地" />
-                                    </div>
-                                </div>
-                                
-                                <div class="form-row">
-                                    <div class="form-col">
-                                        <label class="form-label">数据来源</label>
-                                        <el-select v-model="recordForm.data_source" style="width: 100%;">
-                                            <el-option label="供应商报价" value="供应商报价" />
-                                            <el-option label="电商平台" value="电商平台" />
-                                            <el-option label="历史合同" value="历史合同" />
-                                            <el-option label="其他" value="其他" />
-                                        </el-select>
-                                    </div>
-                                </div>
-                                
-                                <div class="form-row">
-                                    <div class="form-col" style="flex: 100%;">
-                                        <label class="form-label">备注</label>
-                                        <el-input v-model="recordForm.remarks" type="textarea" :rows="4" placeholder="请输入备注信息" />
-                                    </div>
-                                </div>
-                                
-                                <div class="form-row" style="margin-top: 30px;">
-                                    <el-button type="primary" @click="saveRecord" size="large">保存</el-button>
-                                    <el-button @click="menuActive = 'list'" size="large">取消</el-button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- 详情页面 -->
-                    <div v-if="menuActive === 'detail' && currentRecord">
-                        <div class="page-title">📋 询价详情</div>
-                        
-                        <div class="page-card">
-                            <div class="detail-grid">
-                                <div class="detail-item">
-                                    <div class="detail-label">记录编号</div>
-                                    <div class="detail-value">{{ currentRecord.record_id }}</div>
-                                </div>
-                                <div class="detail-item">
-                                    <div class="detail-label">询价日期</div>
-                                    <div class="detail-value">{{ currentRecord.inquiry_date }}</div>
-                                </div>
-                                <div class="detail-item">
-                                    <div class="detail-label">专业分类</div>
-                                    <div class="detail-value">{{ currentRecord.professional_category }}</div>
-                                </div>
-                                <div class="detail-item">
-                                    <div class="detail-label">子分类</div>
-                                    <div class="detail-value">{{ currentRecord.sub_category || '-' }}</div>
-                                </div>
-                                <div class="detail-item">
-                                    <div class="detail-label">材料名称</div>
-                                    <div class="detail-value">{{ currentRecord.material_name }}</div>
-                                </div>
-                                <div class="detail-item">
-                                    <div class="detail-label">规格型号</div>
-                                    <div class="detail-value">{{ currentRecord.specification }}</div>
-                                </div>
-                                <div class="detail-item">
-                                    <div class="detail-label">品牌</div>
-                                    <div class="detail-value">{{ currentRecord.brand || '-' }}</div>
-                                </div>
-                                <div class="detail-item">
-                                    <div class="detail-label">单位</div>
-                                    <div class="detail-value">{{ currentRecord.unit }}</div>
-                                </div>
-                                <div class="detail-item">
-                                    <div class="detail-label">单价</div>
-                                    <div class="detail-value price-highlight" style="font-size: 18px;">¥{{ currentRecord.unit_price?.toFixed(2) }}</div>
-                                </div>
-                                <div class="detail-item">
-                                    <div class="detail-label">是否含税</div>
-                                    <div class="detail-value">
-                                        <el-tag :type="currentRecord.tax_included ? 'success' : 'info'" size="small">
-                                            {{ currentRecord.tax_included ? '是' : '否' }}
-                                        </el-tag>
-                                    </div>
-                                </div>
-                                <div class="detail-item">
-                                    <div class="detail-label">税率</div>
-                                    <div class="detail-value">{{ currentRecord.tax_rate }}%</div>
-                                </div>
-                                <div class="detail-item">
-                                    <div class="detail-label">供应商</div>
-                                    <div class="detail-value">{{ currentRecord.supplier_name || '-' }}</div>
-                                </div>
-                                <div class="detail-item">
-                                    <div class="detail-label">项目名称</div>
-                                    <div class="detail-value">{{ currentRecord.project_name || '-' }}</div>
-                                </div>
-                                <div class="detail-item">
-                                    <div class="detail-label">项目所在地</div>
-                                    <div class="detail-value">{{ currentRecord.project_location || '-' }}</div>
-                                </div>
-                                <div class="detail-item">
-                                    <div class="detail-label">询价人</div>
-                                    <div class="detail-value">{{ currentRecord.inquiry_person || '-' }}</div>
-                                </div>
-                                <div class="detail-item">
-                                    <div class="detail-label">数据来源</div>
-                                    <div class="detail-value">{{ currentRecord.data_source || '-' }}</div>
-                                </div>
-                                <div class="detail-item">
-                                    <div class="detail-label">审核状态</div>
-                                    <div class="detail-value">
-                                        <span :class="`status-${currentRecord.verification_status}`">
-                                            {{ statusMap[currentRecord.verification_status] || currentRecord.verification_status }}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="detail-item">
-                                    <div class="detail-label">创建时间</div>
-                                    <div class="detail-value">{{ currentRecord.created_at?.substring(0, 10) || '-' }}</div>
-                                </div>
-                                <div class="detail-item" style="grid-column: span 2;">
-                                    <div class="detail-label">备注</div>
-                                    <div class="detail-value">{{ currentRecord.remarks || '-' }}</div>
-                                </div>
-                            </div>
-                            
-                            <div style="margin-top: 20px;">
-                                <el-button @click="menuActive = 'list'">返回</el-button>
-                                <el-button type="primary" @click="editRecord(currentRecord)">编辑</el-button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- 待审核页面 -->
-                    <div v-if="menuActive === 'audit'">
-                        <div class="page-title">⏰ 待审核记录</div>
-                        
-                        <div class="page-card">
-                            <el-table :data="records.filter(r => r.verification_status === 'pending')" border stripe style="width: 100%;">
-                                <el-table-column prop="record_id" label="记录编号" width="160" />
-                                <el-table-column prop="material_name" label="材料名称" min-width="120" />
-                                <el-table-column prop="specification" label="规格型号" min-width="150" />
-                                <el-table-column prop="unit_price" label="单价" width="100">
-                                    <template #default="{ row }">
-                                        <span class="price-highlight">¥{{ row.unit_price?.toFixed(2) }}</span>
-                                    </template>
-                                </el-table-column>
-                                <el-table-column prop="supplier_name" label="供应商" min-width="150" />
-                                <el-table-column prop="inquiry_person" label="提交人" width="100" />
-                                <el-table-column prop="inquiry_date" label="询价日期" width="120" />
-                                <el-table-column label="操作" width="180">
-                                    <template #default="{ row }">
-                                        <el-button type="success" size="small" @click="verifyRecord(row, 'approved')">通过</el-button>
-                                        <el-button type="danger" size="small" @click="verifyRecord(row, 'rejected')">驳回</el-button>
-                                    </template>
-                                </el-table-column>
-                            </el-table>
-                            
-                            <div v-if="records.filter(r => r.verification_status === 'pending').length === 0" style="text-align: center; padding: 40px; color: #909399;">
-                                🎉 暂无待审核记录
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 </body>
 </html>
