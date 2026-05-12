@@ -190,6 +190,81 @@
             font-size: 14px;
             color: #606266;
         }
+        
+        .category-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .category-stat-card {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #409eff;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .category-stat-card:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+        }
+        
+        .category-stat-card.active {
+            background: #ecf5ff;
+            border-left-color: #409eff;
+        }
+        
+        .category-stat-card .category-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #303133;
+            margin-bottom: 5px;
+        }
+        
+        .category-stat-card .category-count {
+            font-size: 24px;
+            font-weight: 700;
+            color: #409eff;
+        }
+        
+        .sub-category-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .sub-category-tag {
+            padding: 8px 16px;
+            background: #fff;
+            border: 1px solid #dcdfe6;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 13px;
+        }
+        
+        .sub-category-tag:hover {
+            border-color: #409eff;
+            color: #409eff;
+        }
+        
+        .sub-category-tag.active {
+            background: #409eff;
+            color: #fff;
+            border-color: #409eff;
+        }
+        
+        .sub-category-tag .tag-count {
+            margin-left: 5px;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -356,18 +431,59 @@
                     
                     <div v-if="activeMenu === 'query'" class="query-page">
                         <div class="page-card">
-                            <div style="margin-bottom: 20px; font-weight: 600;">查询筛选</div>
+                            <div style="margin-bottom: 15px; font-weight: 600; font-size: 16px;">📂 专业分类（点击筛选）</div>
+                            <div class="category-stats">
+                                <div 
+                                    class="category-stat-card" 
+                                    :class="{ active: filterForm.professional_category === '' }"
+                                    @click="selectCategory('')"
+                                >
+                                    <div class="category-name">全部专业</div>
+                                    <div class="category-count">{{ categoryStats['全部'] || 0 }}</div>
+                                </div>
+                                <div 
+                                    v-for="category in categoryList" 
+                                    :key="category"
+                                    class="category-stat-card" 
+                                    :class="{ active: filterForm.professional_category === category }"
+                                    @click="selectCategory(category)"
+                                >
+                                    <div class="category-name">{{ category }}</div>
+                                    <div class="category-count">{{ categoryStats[category] || 0 }}</div>
+                                </div>
+                            </div>
+                            
+                            <div v-if="filterForm.professional_category" style="margin-bottom: 15px;">
+                                <div style="margin-bottom: 10px; font-weight: 600; font-size: 14px;">📁 子分类（点击筛选）</div>
+                                <div class="sub-category-tags">
+                                    <span 
+                                        class="sub-category-tag" 
+                                        :class="{ active: filterForm.sub_category === '' }"
+                                        @click="selectSubCategory('')"
+                                    >
+                                        全部<span class="tag-count">({{ getSubCategoryCount('') }})</span>
+                                    </span>
+                                    <span 
+                                        v-for="subCat in querySubCategories" 
+                                        :key="subCat"
+                                        class="sub-category-tag" 
+                                        :class="{ active: filterForm.sub_category === subCat }"
+                                        @click="selectSubCategory(subCat)"
+                                    >
+                                        {{ subCat }}<span class="tag-count">({{ getSubCategoryCount(subCat) }})</span>
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div style="margin-bottom: 15px; font-weight: 600; font-size: 14px;">🔍 高级筛选</div>
                             <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center; margin-bottom: 20px;">
-                                <el-input v-model="filterForm.keyword" placeholder="材料名称、规格" clearable style="width: 200px;" />
-                                <el-select v-model="filterForm.professional_category" placeholder="专业分类" clearable style="width: 150px;">
-                                    <el-option label="给排水" value="给排水" />
-                                    <el-option label="暖通空调" value="暖通空调" />
-                                    <el-option label="电气" value="电气" />
-                                    <el-option label="智能化" value="智能化" />
+                                <el-input v-model="filterForm.keyword" placeholder="材料名称、规格" clearable style="width: 220px;" />
+                                <el-select v-model="filterForm.brand" placeholder="品牌" clearable style="width: 150px;">
+                                    <el-option v-for="brand in brands" :key="brand" :label="brand" :value="brand" />
                                 </el-select>
-                                <el-input-number v-model="filterForm.price_min" :min="0" placeholder="最低价" style="width: 100px;" />
+                                <el-input-number v-model="filterForm.price_min" :min="0" placeholder="最低价" style="width: 120px;" />
                                 <span>—</span>
-                                <el-input-number v-model="filterForm.price_max" :min="0" placeholder="最高价" style="width: 100px;" />
+                                <el-input-number v-model="filterForm.price_max" :min="0" placeholder="最高价" style="width: 120px;" />
                                 <el-select v-model="filterForm.verification_status" placeholder="审核状态" clearable style="width: 120px;">
                                     <el-option label="已通过" value="已通过" />
                                     <el-option label="待审核" value="待审核" />
@@ -377,7 +493,12 @@
                                 <el-button @click="resetFilter">🔄 重置</el-button>
                             </div>
                             
-                            <el-table :data="paginatedData" border style="width: 100%;">
+                            <div style="margin-bottom: 15px; padding: 10px 15px; background: #ecf5ff; border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
+                                <span>📊 当前筛选结果：<strong style="color: #409eff; font-size: 18px;">{{ filteredRecords.length }}</strong> 条记录</span>
+                                <el-button size="small" type="success" @click="exportFilteredData">📥 导出当前结果</el-button>
+                            </div>
+                            
+                            <el-table :data="paginatedData" border style="width: 100%;" :empty-text="'暂无数据，快去上传吧！'">
                                 <el-table-column prop="material_name" label="材料名称" width="180" />
                                 <el-table-column prop="specification" label="规格型号" width="180" />
                                 <el-table-column prop="professional_category" label="专业分类" width="100" />
@@ -397,6 +518,11 @@
                                         <el-tag :type="row.verification_status === '已通过' ? 'success' : row.verification_status === '待审核' ? 'warning' : 'danger'" size="small">
                                             {{ row.verification_status }}
                                         </el-tag>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column label="操作" width="100" fixed="right">
+                                    <template #default="{ row }">
+                                        <el-button size="small" @click="viewDetail(row)">查看</el-button>
                                     </template>
                                 </el-table-column>
                             </el-table>
@@ -504,7 +630,7 @@
                     <div v-if="activeMenu === 'review'" class="review-page">
                         <div class="page-card">
                             <div style="margin-bottom: 20px; font-weight: 600;">待审核数据列表</div>
-                            <el-table :data="pendingRecords" border style="width: 100%;">
+                            <el-table :data="pendingRecords" border style="width: 100%;" :empty-text="'暂无待审核数据'">
                                 <el-table-column prop="material_name" label="材料名称" width="180" />
                                 <el-table-column prop="specification" label="规格型号" width="180" />
                                 <el-table-column prop="professional_category" label="专业分类" width="100" />
@@ -659,9 +785,20 @@
                 const brands = ref([]);
                 const suppliers = ref([]);
                 
+                const categoryList = ['给排水', '暖通空调', '电气', '智能化'];
+                
+                const subCategoriesMap = {
+                    '给排水': ['管材管件', '卫生器具', '消防器材', '水泵设备', '阀门'],
+                    '暖通空调': ['空调设备', '通风设备', '采暖设备', '管材管件', '保温材料'],
+                    '电气': ['线缆类', '配电箱柜', '照明器具', '变压器'],
+                    '智能化': ['安防系统', '消防报警', '楼宇自控', '综合布线']
+                };
+                
                 const filterForm = reactive({
                     keyword: '',
                     professional_category: '',
+                    sub_category: '',
+                    brand: '',
                     price_min: null,
                     price_max: null,
                     verification_status: '已通过',
@@ -698,12 +835,9 @@
                     readonly: '只读用户'
                 };
                 
-                const subCategoriesMap = {
-                    '给排水': ['管材管件', '卫生器具', '消防器材', '水泵设备', '阀门'],
-                    '暖通空调': ['空调设备', '通风设备', '采暖设备', '管材管件', '保温材料'],
-                    '电气': ['线缆类', '配电箱柜', '照明器具', '变压器'],
-                    '智能化': ['安防系统', '消防报警', '楼宇自控', '综合布线']
-                };
+                const querySubCategories = computed(() => {
+                    return filterForm.professional_category ? subCategoriesMap[filterForm.professional_category] || [] : [];
+                });
                 
                 const subCategories = computed(() => {
                     return recordForm.professional_category ? subCategoriesMap[recordForm.professional_category] || [] : [];
@@ -721,6 +855,17 @@
                     return titles[activeMenu.value] || '询价数据库';
                 });
                 
+                const categoryStats = computed(() => {
+                    const stats = { '全部': records.value.filter(r => r.verification_status === filterForm.verification_status).length };
+                    categoryList.forEach(cat => {
+                        stats[cat] = records.value.filter(r => 
+                            r.professional_category === cat && 
+                            r.verification_status === filterForm.verification_status
+                        ).length;
+                    });
+                    return stats;
+                });
+                
                 const stats = computed(() => {
                     const allRecords = records.value;
                     return {
@@ -736,36 +881,73 @@
                 });
                 
                 const filteredRecords = computed(() => {
-                    let result = records.value.filter(r => r.verification_status === filterForm.verification_status);
+                    let result = records.value;
                     
-                    if (filterForm.keyword) {
-                        const kw = filterForm.keyword.toLowerCase();
-                        result = result.filter(r => 
-                            r.material_name.toLowerCase().includes(kw) ||
-                            r.specification.toLowerCase().includes(kw)
-                        );
+                    if (filterForm.verification_status) {
+                        result = result.filter(r => r.verification_status === filterForm.verification_status);
                     }
                     
                     if (filterForm.professional_category) {
                         result = result.filter(r => r.professional_category === filterForm.professional_category);
                     }
                     
-                    if (filterForm.price_min !== null) {
+                    if (filterForm.sub_category) {
+                        result = result.filter(r => r.sub_category === filterForm.sub_category);
+                    }
+                    
+                    if (filterForm.brand) {
+                        result = result.filter(r => r.brand === filterForm.brand);
+                    }
+                    
+                    if (filterForm.keyword) {
+                        const kw = filterForm.keyword.toLowerCase();
+                        result = result.filter(r => 
+                            (r.material_name && r.material_name.toLowerCase().includes(kw)) ||
+                            (r.specification && r.specification.toLowerCase().includes(kw))
+                        );
+                    }
+                    
+                    if (filterForm.price_min !== null && filterForm.price_min !== '') {
                         result = result.filter(r => r.unit_price >= filterForm.price_min);
                     }
                     
-                    if (filterForm.price_max !== null) {
+                    if (filterForm.price_max !== null && filterForm.price_max !== '') {
                         result = result.filter(r => r.unit_price <= filterForm.price_max);
                     }
                     
                     return result;
                 });
                 
-                const paginatedRecords = computed(() => {
+                const paginatedData = computed(() => {
                     const start = (filterForm.page - 1) * filterForm.page_size;
                     const end = start + filterForm.page_size;
                     return filteredRecords.value.slice(start, end);
                 });
+                
+                const getSubCategoryCount = (subCat) => {
+                    if (!subCat) {
+                        return records.value.filter(r => 
+                            r.professional_category === filterForm.professional_category &&
+                            r.verification_status === filterForm.verification_status
+                        ).length;
+                    }
+                    return records.value.filter(r => 
+                        r.professional_category === filterForm.professional_category &&
+                        r.sub_category === subCat &&
+                        r.verification_status === filterForm.verification_status
+                    ).length;
+                };
+                
+                const selectCategory = (category) => {
+                    filterForm.professional_category = category;
+                    filterForm.sub_category = '';
+                    filterForm.page = 1;
+                };
+                
+                const selectSubCategory = (subCat) => {
+                    filterForm.sub_category = subCat;
+                    filterForm.page = 1;
+                };
                 
                 const handleLogin = () => {
                     if (!loginForm.username || !loginForm.password) {
@@ -813,6 +995,8 @@
                 const resetFilter = () => {
                     filterForm.keyword = '';
                     filterForm.professional_category = '';
+                    filterForm.sub_category = '';
+                    filterForm.brand = '';
                     filterForm.price_min = null;
                     filterForm.price_max = null;
                     filterForm.verification_status = '已通过';
@@ -935,12 +1119,36 @@
                     ElementPlus.ElMessage.success('数据导出成功');
                 };
                 
+                const exportFilteredData = () => {
+                    const csvContent = [
+                        ['材料名称', '规格型号', '专业分类', '子分类', '品牌', '单位', '单价', '税率', '供应商', '询价日期'].join(','),
+                        ...filteredRecords.value.map(r => [
+                            r.material_name,
+                            r.specification,
+                            r.professional_category,
+                            r.sub_category,
+                            r.brand,
+                            r.unit,
+                            r.unit_price,
+                            r.tax_rate,
+                            r.supplier_name,
+                            r.inquiry_date
+                        ].join(','))
+                    ].join('\n');
+                    
+                    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = '筛选结果_' + new Date().toISOString().split('T')[0] + '.csv';
+                    link.click();
+                    ElementPlus.ElMessage.success('筛选结果导出成功');
+                };
+                
                 const initChart = () => {
                     if (!categoryChart.value) return;
                     
                     const chart = echarts.init(categoryChart.value);
-                    const categories = ['给排水', '暖通空调', '电气', '智能化'];
-                    const categoryData = categories.map(cat => 
+                    const categoryData = categoryList.map(cat => 
                         records.value.filter(r => r.professional_category === cat && r.verification_status === '已通过').length
                     );
                     
@@ -956,7 +1164,7 @@
                             label: { show: false },
                             emphasis: { label: { show: true, fontSize: 16, fontWeight: 'bold' } },
                             labelLine: { show: false },
-                            data: categories.map((cat, i) => ({ value: categoryData[i], name: cat }))
+                            data: categoryList.map((cat, i) => ({ value: categoryData[i], name: cat }))
                         }]
                     });
                     
@@ -994,17 +1202,23 @@
                     records,
                     brands,
                     suppliers,
+                    categoryList,
                     filterForm,
                     recordForm,
                     categoryChart,
                     showAddUserDialog,
                     roleMap,
+                    querySubCategories,
                     subCategories,
                     pageTitle,
+                    categoryStats,
                     stats,
                     pendingRecords,
                     filteredRecords,
-                    paginatedData: paginatedRecords,
+                    paginatedData,
+                    getSubCategoryCount,
+                    selectCategory,
+                    selectSubCategory,
                     handleLogin,
                     handleLogout,
                     handleMenuSelect,
@@ -1021,7 +1235,8 @@
                     rejectRecord,
                     editUser,
                     deleteUser,
-                    exportData
+                    exportData,
+                    exportFilteredData
                 };
             }
         });
