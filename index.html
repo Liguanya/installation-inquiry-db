@@ -543,87 +543,141 @@
                     
                     <div v-if="activeMenu === 'upload'" class="upload-page">
                         <div class="page-card">
-                            <div style="margin-bottom: 20px; font-weight: 600;">上传询价数据</div>
-                            <el-form :model="recordForm" label-width="120px" style="max-width: 800px;">
-                                <el-form-item label="询价日期">
-                                    <el-date-picker v-model="recordForm.inquiry_date" type="date" value-format="YYYY-MM-DD" style="width: 100%;" />
-                                </el-form-item>
-                                <el-form-item label="专业分类">
-                                    <el-select v-model="recordForm.professional_category" placeholder="请选择" style="width: 100%;" @change="onCategoryChange">
-                                        <el-option label="给排水" value="给排水" />
-                                        <el-option label="暖通空调" value="暖通空调" />
-                                        <el-option label="电气" value="电气" />
-                                        <el-option label="智能化" value="智能化" />
-                                    </el-select>
-                                </el-form-item>
-                                <el-form-item label="子分类">
-                                    <el-select v-model="recordForm.sub_category" placeholder="请选择" style="width: 100%;">
-                                        <el-option v-for="item in subCategories" :key="item" :label="item" :value="item" />
-                                    </el-select>
-                                </el-form-item>
-                                <el-form-item label="品牌">
-                                    <el-select v-model="recordForm.brand" placeholder="请选择" clearable style="width: 100%;">
-                                        <el-option v-for="item in brands" :key="item" :label="item" :value="item" />
-                                    </el-select>
-                                </el-form-item>
-                                <el-form-item label="材料名称">
-                                    <el-input v-model="recordForm.material_name" placeholder="请输入材料名称" />
-                                </el-form-item>
-                                <el-form-item label="规格型号">
-                                    <el-input v-model="recordForm.specification" placeholder="如：YJV-4*16+1*10" />
-                                </el-form-item>
-                                <el-form-item label="单位">
-                                    <el-input v-model="recordForm.unit" placeholder="如：米、个、台" />
-                                </el-form-item>
-                                <el-form-item label="单价">
-                                    <el-input-number v-model="recordForm.unit_price" :min="0" :precision="2" style="width: 100%;" />
-                                </el-form-item>
-                                <el-form-item label="税率">
-                                    <el-select v-model="recordForm.tax_rate" style="width: 100%;">
-                                        <el-option label="13%" value="13%" />
-                                        <el-option label="9%" value="9%" />
-                                        <el-option label="6%" value="6%" />
-                                        <el-option label="3%" value="3%" />
-                                        <el-option label="0%" value="0%" />
-                                    </el-select>
-                                </el-form-item>
-                                <el-form-item label="是否含税">
-                                    <el-radio-group v-model="recordForm.tax_included">
-                                        <el-radio label="是">是</el-radio>
-                                        <el-radio label="否">否</el-radio>
-                                    </el-radio-group>
-                                </el-form-item>
-                                <el-form-item label="供应商">
-                                    <el-select v-model="recordForm.supplier_name" placeholder="请选择供应商" clearable style="width: 100%;">
-                                        <el-option v-for="item in suppliers" :key="item" :label="item" :value="item" />
-                                    </el-select>
-                                </el-form-item>
-                                <el-form-item label="联系人">
-                                    <el-input v-model="recordForm.supplier_contact" placeholder="请输入联系人" />
-                                </el-form-item>
-                                <el-form-item label="项目名称">
-                                    <el-input v-model="recordForm.project_name" placeholder="请输入项目名称" />
-                                </el-form-item>
-                                <el-form-item label="项目所在地">
-                                    <el-input v-model="recordForm.project_location" placeholder="请输入项目所在地" />
-                                </el-form-item>
-                                <el-form-item label="数据来源">
-                                    <el-select v-model="recordForm.data_source" style="width: 100%;">
-                                        <el-option label="厂家报价" value="厂家报价" />
-                                        <el-option label="供应商报价" value="供应商报价" />
-                                        <el-option label="电商平台" value="电商平台" />
-                                        <el-option label="历史数据" value="历史数据" />
-                                        <el-option label="其他" value="其他" />
-                                    </el-select>
-                                </el-form-item>
+                            <div style="margin-bottom: 20px; font-weight: 600;">📥 批量上传询价数据</div>
+                            
+                            <el-alert
+                                title="Excel格式说明"
+                                type="info"
+                                :closable="false"
+                                style="margin-bottom: 20px;"
+                            >
+                                <template #default>
+                                    <div>Excel文件需包含以下列：<strong>材料名称、规格型号、单位、单价、税率</strong></div>
+                                    <div style="margin-top: 5px;">税率格式：如 13%、9%、6%、3%、0%</div>
+                                    <div style="margin-top: 5px;">可选列：专业分类、子分类、品牌（如未填写则使用下方选择项）</div>
+                                </template>
+                            </el-alert>
+
+                            <el-form :model="batchUploadForm" label-width="120px" style="max-width: 1000px;">
+                                <div style="border: 2px dashed #dcdfe6; border-radius: 8px; padding: 40px; text-align: center; margin-bottom: 20px;">
+                                    <el-upload
+                                        ref="uploadRef"
+                                        :auto-upload="false"
+                                        :show-file-list="false"
+                                        accept=".xlsx,.xls"
+                                        :on-change="handleFileChange"
+                                        drag
+                                    >
+                                        <el-icon class="el-icon--upload" style="font-size: 60px; color: #409eff;">
+                                            <UploadFilled />
+                                        </el-icon>
+                                        <div style="margin-top: 20px; font-size: 16px; color: #606266;">
+                                            点击或拖拽Excel文件到此处上传
+                                        </div>
+                                        <div style="margin-top: 10px; font-size: 14px; color: #909399;">
+                                            支持 .xlsx, .xls 格式
+                                        </div>
+                                    </el-upload>
+                                    <div v-if="uploadedFileName" style="margin-top: 15px; color: #67c23a;">
+                                        <el-icon><Check /></el-icon> 已选择文件：{{ uploadedFileName }}
+                                    </div>
+                                </div>
+
+                                <el-divider content-position="left">公共信息设置</el-divider>
+                                
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                                    <el-form-item label="询价日期">
+                                        <el-date-picker v-model="batchUploadForm.inquiry_date" type="date" value-format="YYYY-MM-DD" style="width: 100%;" />
+                                    </el-form-item>
+                                    
+                                    <el-form-item label="专业分类">
+                                        <el-select v-model="batchUploadForm.professional_category" placeholder="请选择（Excel未指定时默认使用）" style="width: 100%;" @change="onBatchCategoryChange">
+                                            <el-option label="给排水" value="给排水" />
+                                            <el-option label="暖通空调" value="暖通空调" />
+                                            <el-option label="电气" value="电气" />
+                                            <el-option label="智能化" value="智能化" />
+                                        </el-select>
+                                    </el-form-item>
+                                    
+                                    <el-form-item label="子分类">
+                                        <el-select v-model="batchUploadForm.sub_category" placeholder="请选择（Excel未指定时默认使用）" style="width: 100%;">
+                                            <el-option v-for="item in batchSubCategories" :key="item" :label="item" :value="item" />
+                                        </el-select>
+                                    </el-form-item>
+                                    
+                                    <el-form-item label="品牌">
+                                        <el-select v-model="batchUploadForm.brand" placeholder="请选择（Excel未指定时默认使用）" clearable style="width: 100%;">
+                                            <el-option v-for="item in brands" :key="item" :label="item" :value="item" />
+                                        </el-select>
+                                    </el-form-item>
+                                    
+                                    <el-form-item label="供应商">
+                                        <el-select v-model="batchUploadForm.supplier_name" placeholder="请选择供应商" clearable style="width: 100%;">
+                                            <el-option v-for="item in suppliers" :key="item" :label="item" :value="item" />
+                                        </el-select>
+                                    </el-form-item>
+                                    
+                                    <el-form-item label="联系人">
+                                        <el-input v-model="batchUploadForm.supplier_contact" placeholder="请输入联系人" />
+                                    </el-form-item>
+                                    
+                                    <el-form-item label="项目名称">
+                                        <el-input v-model="batchUploadForm.project_name" placeholder="请输入项目名称" />
+                                    </el-form-item>
+                                    
+                                    <el-form-item label="项目所在地">
+                                        <el-input v-model="batchUploadForm.project_location" placeholder="请输入项目所在地" />
+                                    </el-form-item>
+                                    
+                                    <el-form-item label="是否含税">
+                                        <el-radio-group v-model="batchUploadForm.tax_included">
+                                            <el-radio label="是">是</el-radio>
+                                            <el-radio label="否">否</el-radio>
+                                        </el-radio-group>
+                                    </el-form-item>
+                                    
+                                    <el-form-item label="数据来源">
+                                        <el-select v-model="batchUploadForm.data_source" style="width: 100%;">
+                                            <el-option label="厂家报价" value="厂家报价" />
+                                            <el-option label="供应商报价" value="供应商报价" />
+                                            <el-option label="电商平台" value="电商平台" />
+                                            <el-option label="历史数据" value="历史数据" />
+                                            <el-option label="其他" value="其他" />
+                                        </el-select>
+                                    </el-form-item>
+                                </div>
+                                
                                 <el-form-item label="备注">
-                                    <el-input v-model="recordForm.remarks" type="textarea" :rows="4" placeholder="请输入备注信息" />
+                                    <el-input v-model="batchUploadForm.remarks" type="textarea" :rows="3" placeholder="请输入备注信息" />
                                 </el-form-item>
+                                
                                 <el-form-item>
-                                    <el-button type="primary" @click="submitRecord">✅ 提交审核</el-button>
-                                    <el-button @click="resetRecordForm">🔄 重置</el-button>
+                                    <el-button type="primary" @click="parseExcel" :disabled="!uploadedFile">📊 解析预览数据</el-button>
+                                    <el-button type="success" @click="submitBatchRecords" :disabled="!parsedData.length">✅ 批量提交审核 ({{ parsedData.length }}条)</el-button>
+                                    <el-button @click="resetBatchForm">🔄 重置</el-button>
+                                    <el-button type="info" @click="downloadTemplate">📄 下载模板</el-button>
                                 </el-form-item>
                             </el-form>
+                            
+                            <div v-if="parsedData.length > 0" style="margin-top: 30px;">
+                                <div style="margin-bottom: 15px; font-weight: 600;">📋 数据预览</div>
+                                <el-table :data="parsedData" border style="width: 100%;" max-height="400">
+                                    <el-table-column type="index" label="序号" width="60" />
+                                    <el-table-column prop="material_name" label="材料名称" min-width="150" />
+                                    <el-table-column prop="specification" label="规格型号" min-width="150" />
+                                    <el-table-column prop="professional_category" label="专业分类" width="100" />
+                                    <el-table-column prop="sub_category" label="子分类" width="100" />
+                                    <el-table-column prop="brand" label="品牌" width="100" />
+                                    <el-table-column prop="unit" label="单位" width="70" />
+                                    <el-table-column prop="unit_price" label="单价" width="100" />
+                                    <el-table-column prop="tax_rate" label="税率" width="80" />
+                                    <el-table-column label="操作" width="80" fixed="right">
+                                        <template #default="{ $index }">
+                                            <el-button size="small" type="danger" @click="removeParsedRow($index)">删除</el-button>
+                                        </template>
+                                    </el-table-column>
+                                </el-table>
+                            </div>
                         </div>
                     </div>
                     
@@ -706,6 +760,7 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://unpkg.com/element-plus"></script>
     <script src="https://unpkg.com/@element-plus/icons-vue"></script>
+    <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
     
     <script>
         const { createApp, ref, reactive, computed, onMounted, watch } = Vue;
@@ -824,6 +879,24 @@
                     data_source: '供应商报价',
                     remarks: ''
                 });
+
+                const batchUploadForm = reactive({
+                    inquiry_date: new Date().toISOString().split('T')[0],
+                    professional_category: '',
+                    sub_category: '',
+                    brand: '',
+                    supplier_name: '',
+                    supplier_contact: '',
+                    project_name: '',
+                    project_location: '',
+                    tax_included: '是',
+                    data_source: '供应商报价',
+                    remarks: ''
+                });
+
+                const uploadedFile = ref(null);
+                const uploadedFileName = ref('');
+                const parsedData = ref([]);
                 
                 const categoryChart = ref(null);
                 const showAddUserDialog = ref(false);
@@ -841,6 +914,10 @@
                 
                 const subCategories = computed(() => {
                     return recordForm.professional_category ? subCategoriesMap[recordForm.professional_category] || [] : [];
+                });
+
+                const batchSubCategories = computed(() => {
+                    return batchUploadForm.professional_category ? subCategoriesMap[batchUploadForm.professional_category] || [] : [];
                 });
                 
                 const pageTitle = computed(() => {
@@ -1015,6 +1092,155 @@
                     recordForm.sub_category = '';
                 };
                 
+                const onBatchCategoryChange = () => {
+                    batchUploadForm.sub_category = '';
+                };
+
+                const handleFileChange = (file) => {
+                    uploadedFile.value = file.raw;
+                    uploadedFileName.value = file.name;
+                };
+
+                const parseExcel = () => {
+                    if (!uploadedFile.value) {
+                        ElementPlus.ElMessage.warning('请先选择Excel文件');
+                        return;
+                    }
+
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            const data = new Uint8Array(e.target.result);
+                            const workbook = XLSX.read(data, { type: 'array' });
+                            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                            const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+
+                            if (jsonData.length === 0) {
+                                ElementPlus.ElMessage.warning('Excel文件中没有数据');
+                                return;
+                            }
+
+                            parsedData.value = jsonData.map((row, index) => {
+                                const getValue = (keys) => {
+                                    for (const key of keys) {
+                                        if (row[key] !== undefined) return row[key];
+                                    }
+                                    return '';
+                                };
+
+                                return {
+                                    material_name: getValue(['材料名称', 'material_name', 'MaterialName', '材料名']) || '',
+                                    specification: getValue(['规格型号', 'specification', 'Specification', '规格']) || '',
+                                    professional_category: getValue(['专业分类', 'professional_category', 'ProfessionalCategory', '专业']) || batchUploadForm.professional_category,
+                                    sub_category: getValue(['子分类', 'sub_category', 'SubCategory', '子类']) || batchUploadForm.sub_category,
+                                    brand: getValue(['品牌', 'brand', 'Brand']) || batchUploadForm.brand,
+                                    unit: getValue(['单位', 'unit', 'Unit']) || '',
+                                    unit_price: parseFloat(getValue(['单价', 'unit_price', 'UnitPrice', '价格'])) || 0,
+                                    tax_rate: formatTaxRate(getValue(['税率', 'tax_rate', 'TaxRate'])) || '13%'
+                                };
+                            });
+
+                            ElementPlus.ElMessage.success(`成功解析 ${parsedData.value.length} 条数据，请检查后提交`);
+                        } catch (error) {
+                            console.error(error);
+                            ElementPlus.ElMessage.error('解析Excel文件失败，请检查文件格式');
+                        }
+                    };
+                    reader.readAsArrayBuffer(uploadedFile.value);
+                };
+
+                const formatTaxRate = (rate) => {
+                    if (!rate) return '';
+                    const str = String(rate).trim();
+                    if (str.includes('%')) return str;
+                    const num = parseFloat(str);
+                    if (!isNaN(num)) {
+                        if (num < 1) return (num * 100).toFixed(0) + '%';
+                        return num + '%';
+                    }
+                    return '';
+                };
+
+                const removeParsedRow = (index) => {
+                    parsedData.value.splice(index, 1);
+                };
+
+                const resetBatchForm = () => {
+                    batchUploadForm.inquiry_date = new Date().toISOString().split('T')[0];
+                    batchUploadForm.professional_category = '';
+                    batchUploadForm.sub_category = '';
+                    batchUploadForm.brand = '';
+                    batchUploadForm.supplier_name = '';
+                    batchUploadForm.supplier_contact = '';
+                    batchUploadForm.project_name = '';
+                    batchUploadForm.project_location = '';
+                    batchUploadForm.tax_included = '是';
+                    batchUploadForm.data_source = '供应商报价';
+                    batchUploadForm.remarks = '';
+                    uploadedFile.value = null;
+                    uploadedFileName.value = '';
+                    parsedData.value = [];
+                };
+
+                const downloadTemplate = () => {
+                    const templateData = [
+                        { '材料名称': '交联聚乙烯绝缘电力电缆', '规格型号': 'YJV-4*16+1*10', '专业分类': '电气', '子分类': '线缆类', '品牌': 'ABB', '单位': '米', '单价': 85.5, '税率': '13%' },
+                        { '材料名称': '低压配电柜', '规格型号': 'GGD-2000*800*600', '专业分类': '电气', '子分类': '配电箱柜', '品牌': '施耐德', '单位': '台', '单价': 12500, '税率': '13%' },
+                        { '材料名称': 'PPR热水管', '规格型号': 'DN25 S3.2', '专业分类': '给排水', '子分类': '管材管件', '品牌': '金牛', '单位': '米', '单价': 18.5, '税率': '13%' }
+                    ];
+
+                    const ws = XLSX.utils.json_to_sheet(templateData);
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, ws, '询价数据模板');
+                    XLSX.writeFile(wb, '安装专业询价数据模板.xlsx');
+                    ElementPlus.ElMessage.success('模板下载成功');
+                };
+
+                const submitBatchRecords = () => {
+                    if (parsedData.value.length === 0) {
+                        ElementPlus.ElMessage.warning('没有可提交的数据');
+                        return;
+                    }
+
+                    const invalidRows = parsedData.value.filter(row => 
+                        !row.material_name || !row.specification || !row.unit || !row.unit_price
+                    );
+
+                    if (invalidRows.length > 0) {
+                        ElementPlus.ElMessage.warning(`发现 ${invalidRows.length} 条不完整数据，请检查材料名称、规格型号、单位、单价是否填写完整`);
+                        return;
+                    }
+
+                    const newRecords = parsedData.value.map(row => ({
+                        id: Date.now() + Math.random(),
+                        inquiry_date: batchUploadForm.inquiry_date,
+                        professional_category: row.professional_category,
+                        sub_category: row.sub_category,
+                        brand: row.brand,
+                        material_name: row.material_name,
+                        specification: row.specification,
+                        unit: row.unit,
+                        unit_price: parseFloat(row.unit_price),
+                        tax_rate: row.tax_rate,
+                        tax_included: batchUploadForm.tax_included,
+                        supplier_name: batchUploadForm.supplier_name,
+                        supplier_contact: batchUploadForm.supplier_contact,
+                        project_name: batchUploadForm.project_name,
+                        project_location: batchUploadForm.project_location,
+                        data_source: batchUploadForm.data_source,
+                        remarks: batchUploadForm.remarks,
+                        verification_status: '待审核',
+                        submitter_id: currentUser.value.id,
+                        submitter_name: currentUser.value.real_name,
+                        submit_time: new Date().toISOString()
+                    }));
+
+                    records.value.push(...newRecords);
+                    saveToStorage(DB_KEYS.RECORDS, records.value);
+                    ElementPlus.ElMessage.success(`成功提交 ${newRecords.length} 条数据，等待审核`);
+                    resetBatchForm();
+                };
+
                 const submitRecord = () => {
                     if (!recordForm.professional_category || !recordForm.material_name || !recordForm.specification || !recordForm.unit || !recordForm.unit_price) {
                         ElementPlus.ElMessage.warning('请填写必填字段');
@@ -1210,6 +1436,11 @@
                     roleMap,
                     querySubCategories,
                     subCategories,
+                    batchSubCategories,
+                    batchUploadForm,
+                    uploadedFile,
+                    uploadedFileName,
+                    parsedData,
                     pageTitle,
                     categoryStats,
                     stats,
@@ -1228,6 +1459,13 @@
                     handleSizeChange,
                     handleCurrentChange,
                     onCategoryChange,
+                    onBatchCategoryChange,
+                    handleFileChange,
+                    parseExcel,
+                    removeParsedRow,
+                    resetBatchForm,
+                    downloadTemplate,
+                    submitBatchRecords,
                     submitRecord,
                     resetRecordForm,
                     viewDetail,
